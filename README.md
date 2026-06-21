@@ -17,6 +17,7 @@ The repository currently contains:
 - PostgreSQL local development setup with Docker Compose
 - Spring Data JPA foundation and Testcontainers-backed backend context tests
 - Flyway foundation for database schema migrations
+- WatchParty persistence domain model and initial database migration
 
 The next phases will add the watch party REST API, frontend implementation, additional automated tests and security scanning.
 
@@ -83,9 +84,9 @@ Database schema migrations are managed with Flyway.
 
 Hibernate schema generation remains disabled with `spring.jpa.hibernate.ddl-auto: none`.
 
-When schema changes are introduced, migration scripts should live under `backend/src/main/resources/db/migration`.
+Schema migration scripts live under `backend/src/main/resources/db/migration`.
 
-The first domain migration will be added together with the domain model in a later phase.
+The current schema includes the `watch_parties` table used by the backend WatchParty persistence model.
 
 ### Start the backend
 
