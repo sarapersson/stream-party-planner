@@ -13,8 +13,9 @@ The repository currently contains:
 - Initial repository baseline
 - Spring Boot backend skeleton
 - Backend health check through Spring Boot Actuator
+- Backend CI for Spring Boot backend tests
 
-The next phases will add the watch party REST API, database integration, frontend, automated tests, CI pipeline and security scanning.
+The next phases will add the watch party REST API, database integration, frontend implementation, additional automated tests and security scanning.
 
 ## Tech stack
 
@@ -26,6 +27,7 @@ Current backend setup:
 - Spring Web MVC
 - Spring Boot Actuator
 - Spring Validation
+- GitHub Actions backend CI
 
 Planned project stack:
 
@@ -35,7 +37,6 @@ Planned project stack:
 - TypeScript
 - Vite
 - Playwright
-- GitHub Actions
 
 ## Project structure
 
@@ -44,6 +45,10 @@ stream-party-planner/
 ├── backend/
 ├── frontend/
 ├── .github/
+│   └── workflows/
+├── .editorconfig
+├── .gitignore
+├── .gitmessage
 ├── .java-version
 ├── .nvmrc
 ├── LICENSE
@@ -88,11 +93,32 @@ Expected response:
 {"groups":["liveness","readiness"],"status":"UP"}
 ```
 
+## Continuous integration
+
+Backend CI is configured with GitHub Actions.
+
+The backend CI workflow runs Spring Boot backend tests on:
+
+- Pushes to `main`
+- Pushes to `feature/**`
+- Pull requests targeting `main`
+- Manual workflow dispatch
+
 ## Development workflow
 
 Development is done through feature branches and pull requests.
 
 The `main` branch should stay stable.
+
+Recommended flow:
+
+1. Create a feature branch.
+2. Open a pull request.
+3. Wait for CI to pass.
+4. Squash and merge into `main`.
+5. Delete the remote feature branch.
+6. Pull latest `main` locally.
+7. Delete the local feature branch.
 
 ## Security notes
 
