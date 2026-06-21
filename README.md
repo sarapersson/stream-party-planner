@@ -16,6 +16,7 @@ The repository currently contains:
 - Backend CI for Spring Boot backend tests
 - PostgreSQL local development setup with Docker Compose
 - Spring Data JPA foundation and Testcontainers-backed backend context tests
+- Flyway foundation for database schema migrations
 
 The next phases will add the watch party REST API, frontend implementation, additional automated tests and security scanning.
 
@@ -30,6 +31,7 @@ Current backend setup:
 - Spring Boot Actuator
 - Spring Validation
 - Spring Data JPA
+- Flyway
 - PostgreSQL 18.x
 - Docker Compose for local PostgreSQL
 - Testcontainers for backend integration testing
@@ -74,6 +76,16 @@ cd backend
 ```
 
 Backend tests use Testcontainers with PostgreSQL, so Docker must be running.
+
+### Database migrations
+
+Database schema migrations are managed with Flyway.
+
+Hibernate schema generation remains disabled with `spring.jpa.hibernate.ddl-auto: none`.
+
+When schema changes are introduced, migration scripts should live under `backend/src/main/resources/db/migration`.
+
+The first domain migration will be added together with the domain model in a later phase.
 
 ### Start the backend
 
