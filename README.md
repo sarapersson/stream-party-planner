@@ -2,7 +2,7 @@
 
 # StreamParty Planner
 
-Full-stack web application for planning and managing stream watch parties.
+Planned full-stack web application for planning and managing stream watch parties.
 
 This project is built step by step as part of a DevSecOps/full-stack course project, with focus on clean architecture, automated testing, CI/CD practices and secure development workflows.
 
@@ -14,8 +14,10 @@ The repository currently contains:
 - Spring Boot backend skeleton
 - Backend health check through Spring Boot Actuator
 - Backend CI for Spring Boot backend tests
+- PostgreSQL local development setup with Docker Compose
+- Spring Data JPA foundation and Testcontainers-backed backend context tests
 
-The next phases will add the watch party REST API, database integration, frontend implementation, additional automated tests and security scanning.
+The next phases will add the watch party REST API, frontend implementation, additional automated tests and security scanning.
 
 ## Tech stack
 
@@ -27,11 +29,14 @@ Current backend setup:
 - Spring Web MVC
 - Spring Boot Actuator
 - Spring Validation
+- Spring Data JPA
+- PostgreSQL 18.x
+- Docker Compose for local PostgreSQL
+- Testcontainers for backend integration testing
 - GitHub Actions backend CI
 
 Planned project stack:
 
-- PostgreSQL 18.x
 - Node.js 24 LTS
 - React 19
 - TypeScript
@@ -51,6 +56,8 @@ stream-party-planner/
 ├── .gitmessage
 ├── .java-version
 ├── .nvmrc
+├── .env.example
+├── docker-compose.yml
 ├── LICENSE
 └── README.md
 ```
@@ -66,11 +73,15 @@ cd backend
 ./mvnw test
 ```
 
+Backend tests use Testcontainers with PostgreSQL, so Docker must be running.
+
 ### Start the backend
 
 ```bash
+cp .env.example .env
+docker compose up -d
 cd backend
-./mvnw spring-boot:run
+SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
 ```
 
 The backend starts on:
