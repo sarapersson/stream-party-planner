@@ -185,6 +185,6 @@ Recommended flow:
 - Do not commit `.env` files.
 - Use `.env.example` only for safe local development template values.
 - Keep sensitive configuration out of tracked repository files.
-## License
 
+## License
 This project is licensed under the MIT License.
