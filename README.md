@@ -4,7 +4,7 @@
 
 Planned full-stack web application for planning and managing stream watch parties.
 
-This project is built step by step as part of a DevSecOps/full-stack course project, with focus on clean architecture, automated testing, CI/CD practices and secure development workflows.
+This project is built step by step as part of a DevSecOps/full-stack course project, with focus on a clear layered Spring Boot architecture, automated testing, CI/CD practices and secure development workflows.
 
 ## Current status
 
