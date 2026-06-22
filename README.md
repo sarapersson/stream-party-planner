@@ -160,7 +160,7 @@ Backend tests and API verification are configured with GitHub Actions.
 The backend CI workflow runs Spring Boot backend tests on:
 
 - Pushes to `main`
-- Pushes to `feature/**`
+- Selected development branch pushes
 - Pull requests targeting `main`
 - Manual workflow dispatch
 

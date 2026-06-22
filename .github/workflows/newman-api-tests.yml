@@ -91,12 +91,12 @@ jobs:
 
       - name: Run Newman collection
         run: |
-          npx --yes newman run postman/StreamPartyPlanner.postman_collection.json \
+          npx --yes newman@6.2.2 run postman/StreamPartyPlanner.postman_collection.json \
             -e postman/local.postman_environment.json
 
       - name: Stop backend
         if: always()
         run: |
           if [[ -f backend-newman.pid ]]; then
-            kill "$(cat backend-newman.pid)" || true
+            kill "$(cat backend-newman.pid)" 2>/dev/null || true
           fi

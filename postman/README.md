@@ -13,7 +13,7 @@ docker compose --env-file .env up -d
 Run the Postman collection with Newman from the repository root:
 
 ```bash
-newman run postman/StreamPartyPlanner.postman_collection.json \
+npx --yes newman@6.2.2 run postman/StreamPartyPlanner.postman_collection.json \
   -e postman/local.postman_environment.json
 ```
 
