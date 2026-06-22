@@ -18,9 +18,9 @@ The repository currently contains:
 - Spring Data JPA foundation and Testcontainers-backed backend context tests
 - Flyway foundation for database schema migrations
 - WatchParty persistence domain model and initial database migration
-- WatchParty REST API baseline for create and read use cases
+- WatchParty REST API baseline for CRUD use cases
 
-The next phases will add frontend implementation, additional watch party API capabilities, additional automated tests and security scanning.
+The next phases will add frontend implementation, additional automated tests, security scanning and further product capabilities.
 
 ## Tech stack
 
@@ -104,17 +104,17 @@ The backend starts on:
 http://localhost:8080
 ```
 
-### WatchParty API baseline
+### WatchParty CRUD API baseline
 
 The backend currently implements these WatchParty endpoints:
 
 - `POST /api/watch-parties`
 - `GET /api/watch-parties`
 - `GET /api/watch-parties/{id}`
+- `PUT /api/watch-parties/{id}`
+- `DELETE /api/watch-parties/{id}`
 
 The API contract is documented in `docs/API_CONTRACT.md`.
-
-Update and delete endpoints are not implemented yet.
 
 ### Health check
 

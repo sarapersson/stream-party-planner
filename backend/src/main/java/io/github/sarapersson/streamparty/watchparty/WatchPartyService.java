@@ -45,4 +45,28 @@ public class WatchPartyService {
 		return WatchPartyMapper.toResponse(watchParty);
 	}
 
+	@Transactional
+	public WatchPartyResponse update(UUID id, WatchPartyUpdateRequest request) {
+		WatchParty watchParty = repository.findById(id)
+			.orElseThrow(() -> new WatchPartyNotFoundException(id));
+
+		watchParty.updateDetails(
+				request.title(),
+				request.description(),
+				request.scheduledAt(),
+				request.genre(),
+				request.maxParticipants(),
+				request.status());
+
+		return WatchPartyMapper.toResponse(watchParty);
+	}
+
+	@Transactional
+	public void delete(UUID id) {
+		WatchParty watchParty = repository.findById(id)
+			.orElseThrow(() -> new WatchPartyNotFoundException(id));
+
+		repository.delete(watchParty);
+	}
+
 }

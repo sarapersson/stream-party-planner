@@ -2,9 +2,13 @@ package io.github.sarapersson.streamparty.watchparty;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,6 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 
 @WebMvcTest(WatchPartyController.class)
 @Import(ApiExceptionHandler.class)
@@ -169,6 +174,148 @@ class WatchPartyControllerTest {
 		given(service.findById(id)).willThrow(new WatchPartyNotFoundException(id));
 
 		mockMvc.perform(get("/api/watch-parties/{id}", id))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.title").value("Watch party not found"))
+			.andExpect(jsonPath("$.status").value(404))
+			.andExpect(jsonPath("$.detail").value("No watch party exists with id " + id + "."));
+	}
+
+	@Test
+	void updateWatchPartyWhenValidReturnsResponse() throws Exception {
+		UUID id = UUID.randomUUID();
+		Instant scheduledAt = Instant.now().plus(Duration.ofDays(2)).truncatedTo(ChronoUnit.SECONDS);
+		Instant createdAt = Instant.parse("2026-06-21T10:15:30Z");
+		Instant updatedAt = Instant.parse("2026-06-22T10:15:30Z");
+		WatchPartyResponse response = new WatchPartyResponse(
+				id,
+				"Updated sci-fi stream",
+				"Updated description",
+				scheduledAt,
+				"Sci-Fi",
+				10,
+				WatchPartyStatus.LIVE,
+				createdAt,
+				updatedAt);
+		given(service.update(eq(id), any(WatchPartyUpdateRequest.class))).willReturn(response);
+		String requestBody = """
+				{
+				  "title": "Updated sci-fi stream",
+				  "description": "Updated description",
+				  "scheduledAt": "%s",
+				  "genre": "Sci-Fi",
+				  "maxParticipants": 10,
+				  "status": "LIVE"
+				}
+				""".formatted(scheduledAt);
+
+		mockMvc.perform(put("/api/watch-parties/{id}", id)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(id.toString()))
+			.andExpect(jsonPath("$.title").value("Updated sci-fi stream"))
+			.andExpect(jsonPath("$.description").value("Updated description"))
+			.andExpect(jsonPath("$.scheduledAt").value(scheduledAt.toString()))
+			.andExpect(jsonPath("$.genre").value("Sci-Fi"))
+			.andExpect(jsonPath("$.maxParticipants").value(10))
+			.andExpect(jsonPath("$.status").value("LIVE"))
+			.andExpect(jsonPath("$.createdAt").value(createdAt.toString()))
+			.andExpect(jsonPath("$.updatedAt").value(updatedAt.toString()));
+
+		verify(service).update(eq(id), any(WatchPartyUpdateRequest.class));
+	}
+
+	@Test
+	void updateWatchPartyWithInvalidRequestReturnsProblemDetail() throws Exception {
+		String requestBody = """
+				{
+				  "title": "",
+				  "description": "Updated description",
+				  "scheduledAt": "2020-01-01T00:00:00Z",
+				  "genre": "",
+				  "maxParticipants": 0
+				}
+				""";
+
+		mockMvc.perform(put("/api/watch-parties/{id}", UUID.randomUUID())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.title").value("Validation failed"))
+			.andExpect(jsonPath("$.status").value(400))
+			.andExpect(jsonPath("$.fieldErrors").isArray());
+
+		verifyNoInteractions(service);
+	}
+
+	@Test
+	void updateWatchPartyWhenMissingReturnsProblemDetail() throws Exception {
+		UUID id = UUID.randomUUID();
+		Instant scheduledAt = Instant.now().plus(Duration.ofDays(2)).truncatedTo(ChronoUnit.SECONDS);
+		given(service.update(eq(id), any(WatchPartyUpdateRequest.class)))
+			.willThrow(new WatchPartyNotFoundException(id));
+		String requestBody = """
+				{
+				  "title": "Updated sci-fi stream",
+				  "description": "Updated description",
+				  "scheduledAt": "%s",
+				  "genre": "Sci-Fi",
+				  "maxParticipants": 10,
+				  "status": "LIVE"
+				}
+				""".formatted(scheduledAt);
+
+		mockMvc.perform(put("/api/watch-parties/{id}", id)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.title").value("Watch party not found"))
+			.andExpect(jsonPath("$.status").value(404))
+			.andExpect(jsonPath("$.detail").value("No watch party exists with id " + id + "."));
+	}
+
+	@Test
+	void updateWatchPartyWithInvalidEnumReturnsProblemDetail() throws Exception {
+		UUID id = UUID.randomUUID();
+		Instant scheduledAt = Instant.now().plus(Duration.ofDays(2)).truncatedTo(ChronoUnit.SECONDS);
+		String requestBody = """
+				{
+				"title": "Updated sci-fi stream",
+				"description": "Updated description",
+				"scheduledAt": "%s",
+				"genre": "Sci-Fi",
+				"maxParticipants": 10,
+				"status": "INVALID"
+				}
+				""".formatted(scheduledAt);
+
+		mockMvc.perform(put("/api/watch-parties/{id}", id)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.title").value("Malformed request"))
+			.andExpect(jsonPath("$.status").value(400))
+			.andExpect(jsonPath("$.detail").value("Request body is invalid or unreadable."));
+
+		verifyNoInteractions(service);
+	}
+
+	@Test
+	void deleteWatchPartyWhenFoundReturnsNoContent() throws Exception {
+		UUID id = UUID.randomUUID();
+
+		mockMvc.perform(delete("/api/watch-parties/{id}", id))
+			.andExpect(status().isNoContent());
+
+		verify(service).delete(id);
+	}
+
+	@Test
+	void deleteWatchPartyWhenMissingReturnsProblemDetail() throws Exception {
+		UUID id = UUID.randomUUID();
+		willThrow(new WatchPartyNotFoundException(id)).given(service).delete(id);
+
+		mockMvc.perform(delete("/api/watch-parties/{id}", id))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.title").value("Watch party not found"))
 			.andExpect(jsonPath("$.status").value(404))
