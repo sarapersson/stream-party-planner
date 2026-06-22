@@ -1,6 +1,4 @@
-# 🚧
-
-# StreamParty Planner
+# 🚧 StreamParty Planner
 
 Planned full-stack web application for planning and managing stream watch parties.
 
