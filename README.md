@@ -18,8 +18,9 @@ The repository currently contains:
 - WatchParty persistence domain model and initial database migration
 - WatchParty REST API baseline for CRUD use cases
 - Postman/Newman API verification locally and in CI
+- React 19, TypeScript and Vite frontend skeleton
 
-The next phases will add frontend implementation, additional automated tests, security scanning and further product capabilities.
+The next phases will add WatchParty frontend UI flows, additional automated tests, security scanning and further product capabilities.
 
 ## Tech stack
 
@@ -38,12 +39,16 @@ Current backend setup:
 - Testcontainers for backend integration testing
 - GitHub Actions backend CI and Newman API tests CI
 
-Planned project stack:
+Current frontend setup:
 
 - Node.js 24 LTS
+- npm
 - React 19
 - TypeScript
 - Vite
+
+Planned project stack:
+
 - Playwright
 
 ## Project structure
@@ -52,6 +57,7 @@ Planned project stack:
 stream-party-planner/
 ├── backend/
 ├── docs/
+├── frontend/
 ├── postman/
 ├── scripts/
 ├── .github/
@@ -152,6 +158,31 @@ Expected response:
 ```json
 {"groups":["liveness","readiness"],"status":"UP"}
 ```
+
+## Frontend
+
+The frontend is located in `frontend/`.
+
+Use Node.js 24 LTS. The repository root `.nvmrc` is set to `24`.
+
+Install dependencies and build the frontend locally:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+Start the local Vite development server:
+
+```bash
+cd frontend
+npm run dev
+```
+
+During local development, Vite proxies `/api` requests to the backend at `http://localhost:8080`.
+
+The Phase 12 frontend is a minimal application shell. WatchParty read, create, update, and delete UI flows will be added in later phases.
 
 ## Continuous integration
 
