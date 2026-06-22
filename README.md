@@ -53,6 +53,7 @@ Planned project stack:
 stream-party-planner/
 ├── backend/
 ├── docs/
+├── postman/
 ├── .github/
 │   └── workflows/
 ├── .editorconfig
@@ -115,6 +116,8 @@ The backend currently implements these WatchParty endpoints:
 - `DELETE /api/watch-parties/{id}`
 
 The API contract is documented in `docs/API_CONTRACT.md`.
+
+Local external API verification with Postman/Newman is documented in `postman/README.md`.
 
 ### Health check
 
