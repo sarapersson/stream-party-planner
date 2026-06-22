@@ -54,6 +54,7 @@ stream-party-planner/
 ├── backend/
 ├── docs/
 ├── postman/
+├── scripts/
 ├── .github/
 │   └── workflows/
 ├── .editorconfig
@@ -62,7 +63,6 @@ stream-party-planner/
 ├── .java-version
 ├── .nvmrc
 ├── .env.example
-├── scripts/
 ├── docker-compose.yml
 ├── LICENSE
 └── README.md
@@ -93,9 +93,17 @@ The current schema includes the `watch_parties` table used by the backend WatchP
 
 ### Local configuration
 
-`.env.example` is a committed local development template. Copy it to `.env` for local use; `.env` is ignored by Git, and the example values are local development values, not real secrets.
+`.env.example` is a committed local development template.
 
-Docker Compose is started with `--env-file .env` so the selected local configuration is explicit. `scripts/dev-backend.sh` loads the repository-root `.env` before starting Spring Boot with the `dev` profile. The backend dev profile no longer silently falls back to database credentials, so missing local configuration fails during startup instead of using example values.
+Copy it to `.env` for local use. The `.env` file is ignored by Git and should stay local to each developer machine.
+
+The example values are local development values, not real secrets.
+
+Docker Compose is started with `--env-file .env` so the selected local configuration is explicit.
+
+`scripts/dev-backend.sh` loads the repository-root `.env` before starting Spring Boot with the `dev` profile.
+
+The backend dev profile does not silently fall back to database credentials. Missing local configuration fails during startup instead of using example values.
 
 If PostgreSQL credentials are changed after the Docker volume has already been initialized, reset the local volume:
 
@@ -175,11 +183,10 @@ Recommended flow:
 
 ## Security notes
 
-- Do not commit real staging or production secrets.
-- Do not commit `.env` files; use `.env.example` only for safe local development template values.
-- Future CI and deployment workflows must use GitHub Actions secrets, deployment environment secrets, OIDC or a secrets manager where appropriate.
-- Current backend CI does not require real secrets.
-
+- Do not commit real secrets or personal credentials.
+- Do not commit `.env` files.
+- Use `.env.example` only for safe local development template values.
+- Keep sensitive configuration out of tracked repository files.
 ## License
 
 This project is licensed under the MIT License.
