@@ -1,0 +1,102 @@
+name: Newman API tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  newman:
+    name: Newman API tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:18
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: stream_party_ci
+          POSTGRES_USER: stream_party_ci
+          POSTGRES_PASSWORD: stream_party_ci_password
+        options: >-
+          --health-cmd "pg_isready -U stream_party_ci -d stream_party_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Start backend
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: stream_party_ci
+          POSTGRES_USER: stream_party_ci
+          POSTGRES_PASSWORD: stream_party_ci_password
+        run: |
+          cd backend
+          ./mvnw --batch-mode --no-transfer-progress spring-boot:run > ../backend-newman.log 2>&1 &
+          echo $! > ../backend-newman.pid
+
+      - name: Wait for backend health
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
+              echo "Backend is healthy."
+              exit 0
+            fi
+
+            echo "Waiting for backend health check... attempt ${attempt}/60"
+            sleep 2
+          done
+
+          echo "Backend did not become healthy."
+          cat backend-newman.log
+          exit 1
+
+      - name: Run Newman collection
+        run: |
+          npx --yes newman@6.2.2 run postman/StreamPartyPlanner.postman_collection.json \
+            -e postman/local.postman_environment.json
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [[ -f backend-newman.pid ]]; then
+            kill "$(cat backend-newman.pid)" 2>/dev/null || true
+          fi
