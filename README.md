@@ -62,6 +62,7 @@ stream-party-planner/
 ├── .java-version
 ├── .nvmrc
 ├── .env.example
+├── scripts/
 ├── docker-compose.yml
 ├── LICENSE
 └── README.md
@@ -90,13 +91,25 @@ Schema migration scripts live under `backend/src/main/resources/db/migration`.
 
 The current schema includes the `watch_parties` table used by the backend WatchParty persistence model.
 
+### Local configuration
+
+`.env.example` is a committed local development template. Copy it to `.env` for local use; `.env` is ignored by Git, and the example values are local development values, not real secrets.
+
+Docker Compose is started with `--env-file .env` so the selected local configuration is explicit. `scripts/dev-backend.sh` loads the repository-root `.env` before starting Spring Boot with the `dev` profile. The backend dev profile no longer silently falls back to database credentials, so missing local configuration fails during startup instead of using example values.
+
+If PostgreSQL credentials are changed after the Docker volume has already been initialized, reset the local volume:
+
+```bash
+docker compose down -v
+docker compose --env-file .env up -d
+```
+
 ### Start the backend
 
 ```bash
 cp .env.example .env
-docker compose up -d
-cd backend
-SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+docker compose --env-file .env up -d
+./scripts/dev-backend.sh
 ```
 
 The backend starts on:
@@ -162,10 +175,10 @@ Recommended flow:
 
 ## Security notes
 
-- Do not commit secrets
-- Do not commit `.env` files
-- Keep generated files, build output and local machine files out of Git
-- Add validation, dependency scanning and security checks in later phases
+- Do not commit real staging or production secrets.
+- Do not commit `.env` files; use `.env.example` only for safe local development template values.
+- Future CI and deployment workflows must use GitHub Actions secrets, deployment environment secrets, OIDC or a secrets manager where appropriate.
+- Current backend CI does not require real secrets.
 
 ## License
 

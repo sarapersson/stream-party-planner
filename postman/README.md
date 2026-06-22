@@ -6,9 +6,8 @@ Start the local backend:
 
 ```bash
 cp .env.example .env
-docker compose up -d
-cd backend
-SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+docker compose --env-file .env up -d
+./scripts/dev-backend.sh
 ```
 
 Run the Postman collection with Newman from the repository root:
