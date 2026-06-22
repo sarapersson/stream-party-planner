@@ -23,5 +23,5 @@ spring:
       on-profile: dev
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:stream_party}
-    username: ${POSTGRES_USER:postgres}
-    password: ${POSTGRES_PASSWORD:postgres}
+    username: ${POSTGRES_USER:stream_party_local}
+    password: ${POSTGRES_PASSWORD:stream_party_local_password}
