@@ -1,8 +1,8 @@
 # API Contract
 
-This document describes the StreamParty Planner backend API implemented in Phase 7.
+This document describes the StreamParty Planner backend API implemented through Phase 8.
 
-The backend currently exposes a WatchParty API baseline only. There is no frontend, authentication, authorization, pagination, sorting, filtering, update or delete API yet.
+The backend currently exposes a WatchParty CRUD API baseline only. There is no frontend, authentication, authorization, pagination, sorting or filtering yet.
 
 ## Watch Parties
 
@@ -96,15 +96,71 @@ Successful response:
 
 If the watch party does not exist, the API returns `404 Not Found` with a ProblemDetail-style response.
 
+### Update Watch Party
+
+`PUT /api/watch-parties/{id}`
+
+Fully updates the mutable fields of an existing watch party by UUID. The resource id comes from the path. The request body does not accept `id`, `createdAt` or `updatedAt`.
+
+Request body:
+
+```json
+{
+  "title": "Updated sci-fi stream",
+  "description": "Updated description",
+  "scheduledAt": "2030-08-01T20:00:00Z",
+  "genre": "Sci-Fi",
+  "maxParticipants": 10,
+  "status": "LIVE"
+}
+```
+
+Successful response:
+
+`200 OK`
+
+```json
+{
+  "id": "3f7f9dd6-4f6a-4b7b-a7ec-9102567ff8ad",
+  "title": "Updated sci-fi stream",
+  "description": "Updated description",
+  "scheduledAt": "2030-08-01T20:00:00Z",
+  "genre": "Sci-Fi",
+  "maxParticipants": 10,
+  "status": "LIVE",
+  "createdAt": "2026-06-21T10:15:30Z",
+  "updatedAt": "2026-06-22T10:15:30Z"
+}
+```
+
+If the request body fails validation, contains invalid JSON or contains an invalid enum value, the API returns `400 Bad Request` with a ProblemDetail-style response.
+
+If the watch party does not exist, the API returns `404 Not Found` with a ProblemDetail-style response.
+
+### Delete Watch Party
+
+`DELETE /api/watch-parties/{id}`
+
+Hard deletes one watch party by UUID.
+
+Successful response:
+
+`204 No Content`
+
+The response body is empty.
+
+If the watch party does not exist, the API returns `404 Not Found` with a ProblemDetail-style response.
+
 ## Validation
 
-Create requests are validated with these rules:
+Create and full update requests are validated with these rules:
 
 - `title` is required and must be at most 120 characters.
 - `description` is optional and must be at most 1000 characters.
 - `scheduledAt` is required and must be in the present or future.
 - `genre` is required and must be at most 80 characters.
 - `maxParticipants` must be positive.
+- `status` is required for update requests.
 
 Validation failures return `400 Bad Request` with a ProblemDetail-style response and field error details.
 
@@ -127,8 +183,6 @@ Example:
 
 ## Planned Later
 
-The following endpoints are not implemented yet:
+Potential future endpoint:
 
-- `PUT /api/watch-parties/{id}`
 - `PATCH /api/watch-parties/{id}`
-- `DELETE /api/watch-parties/{id}`

@@ -104,6 +104,22 @@ public class WatchParty {
 		return updatedAt;
 	}
 
+	public void updateDetails(
+			String title,
+			String description,
+			Instant scheduledAt,
+			String genre,
+			int maxParticipants,
+			WatchPartyStatus status) {
+		this.title = requireText(title, "title", 120);
+		this.description = requireMaxLength(description, "description", 1000);
+		this.scheduledAt = Objects.requireNonNull(scheduledAt, "scheduledAt must not be null");
+		this.genre = requireText(genre, "genre", 80);
+		this.maxParticipants = requirePositive(maxParticipants);
+		this.status = Objects.requireNonNull(status, "status must not be null");
+		this.updatedAt = Instant.now();
+	}
+
 	private static String requireText(String value, String fieldName, int maxLength) {
 		if (value == null || value.isBlank()) {
 			throw new IllegalArgumentException(fieldName + " must not be blank");
