@@ -1,6 +1,4 @@
-# 🚧
-
-# StreamParty Planner
+# 🚧 StreamParty Planner
 
 Planned full-stack web application for planning and managing stream watch parties.
 
@@ -54,6 +52,7 @@ stream-party-planner/
 ├── backend/
 ├── docs/
 ├── postman/
+├── scripts/
 ├── .github/
 │   └── workflows/
 ├── .editorconfig
@@ -90,13 +89,33 @@ Schema migration scripts live under `backend/src/main/resources/db/migration`.
 
 The current schema includes the `watch_parties` table used by the backend WatchParty persistence model.
 
+### Local configuration
+
+`.env.example` is a committed local development template.
+
+Copy it to `.env` for local use. The `.env` file is ignored by Git and should stay local to each developer machine.
+
+The example values are local development values, not real secrets.
+
+Docker Compose is started with `--env-file .env` so the selected local configuration is explicit.
+
+`scripts/dev-backend.sh` loads the repository-root `.env` before starting Spring Boot with the `dev` profile.
+
+The backend dev profile does not silently fall back to database credentials. Missing local configuration fails during startup instead of using example values.
+
+If PostgreSQL credentials are changed after the Docker volume has already been initialized, reset the local volume:
+
+```bash
+docker compose down -v
+docker compose --env-file .env up -d
+```
+
 ### Start the backend
 
 ```bash
 cp .env.example .env
-docker compose up -d
-cd backend
-SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+docker compose --env-file .env up -d
+./scripts/dev-backend.sh
 ```
 
 The backend starts on:
@@ -162,10 +181,10 @@ Recommended flow:
 
 ## Security notes
 
-- Do not commit secrets
-- Do not commit `.env` files
-- Keep generated files, build output and local machine files out of Git
-- Add validation, dependency scanning and security checks in later phases
+- Do not commit real secrets or personal credentials.
+- Do not commit `.env` files.
+- Use `.env.example` only for safe local development template values.
+- Keep sensitive configuration out of tracked repository files.
 
 ## License
 
