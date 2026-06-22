@@ -19,7 +19,6 @@ The repository currently contains:
 - Flyway foundation for database schema migrations
 - WatchParty persistence domain model and initial database migration
 - WatchParty REST API baseline for CRUD use cases
-- Postman/Newman external API verification for the WatchParty API
 
 The next phases will add frontend implementation, additional automated tests, security scanning and further product capabilities.
 
@@ -118,7 +117,7 @@ The backend currently implements these WatchParty endpoints:
 
 The API contract is documented in `docs/API_CONTRACT.md`.
 
-External API verification with Postman/Newman can be run locally and also runs in CI. See `postman/README.md`.
+Local external API verification with Postman/Newman is documented in `postman/README.md`.
 
 ### Health check
 
@@ -136,7 +135,7 @@ Expected response:
 
 ## Continuous integration
 
-Backend CI and Newman API verification are configured with GitHub Actions.
+Backend CI is configured with GitHub Actions.
 
 The backend CI workflow runs Spring Boot backend tests on:
 
@@ -144,8 +143,6 @@ The backend CI workflow runs Spring Boot backend tests on:
 - Pushes to `feature/**`
 - Pull requests targeting `main`
 - Manual workflow dispatch
-
-The Newman API tests workflow runs the Postman collection on pushes to `main`, pull requests targeting `main`, and manual workflow dispatch.
 
 ## Development workflow
 
