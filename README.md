@@ -187,4 +187,5 @@ Recommended flow:
 - Keep sensitive configuration out of tracked repository files.
 
 ## License
+
 This project is licensed under the MIT License.
