@@ -17,4 +17,10 @@ newman run postman/StreamPartyPlanner.postman_collection.json \
   -e postman/local.postman_environment.json
 ```
 
-The collection verifies the health endpoint and the current WatchParty CRUD API through local HTTP requests. Running Newman in CI is planned for a later phase and is not implemented here.
+The collection verifies the health endpoint and the current WatchParty CRUD API through local HTTP requests.
+
+## CI verification
+
+The same Postman collection runs in GitHub Actions in the `Newman API tests` workflow.
+
+CI starts the backend against an ephemeral PostgreSQL service container with disposable CI test database values. These values are not production or staging secrets.
