@@ -2,6 +2,7 @@
   --accent: #2563eb;
   --background: #f8fafc;
   --border: #dbe4ef;
+  --button-text: #ffffff;
   --error: #b91c1c;
   --shadow: 0 20px 45px rgb(15 23 42 / 0.08);
   --surface: #ffffff;
@@ -27,6 +28,7 @@
     --accent: #93c5fd;
     --background: #0f172a;
     --border: #334155;
+    --button-text: #0f172a;
     --error: #fca5a5;
     --shadow: 0 20px 45px rgb(0 0 0 / 0.24);
     --surface: #111827;
