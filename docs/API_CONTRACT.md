@@ -1,16 +1,98 @@
 # API Contract
 
-This document describes the StreamParty Planner backend API implemented through Phase 8.
+This document describes the current StreamParty Planner backend HTTP API.
 
-The backend currently exposes a WatchParty CRUD API baseline only. There is no frontend, authentication, authorization, pagination, sorting or filtering yet.
+The API is consumed by the React frontend and by the Postman/Newman verification collection. It documents implemented behavior only.
 
-## Watch Parties
+## Base URL
 
-### Create Watch Party
+For local development, the backend runs at:
 
-`POST /api/watch-parties`
+```text
+http://localhost:8080
+```
+
+## Conventions
+
+* Request and response bodies use JSON.
+* Resource identifiers are UUID strings.
+* Date and time values use ISO-8601 timestamps.
+* API errors use ProblemDetail-style JSON responses.
+* Authentication and authorization are not implemented in the current baseline.
+* Pagination, sorting and filtering are not implemented in the current baseline.
+
+## Operational Endpoint
+
+### Health Check
+
+```http
+GET /actuator/health
+```
+
+Returns the current application health status.
+
+Successful response:
+
+```http
+200 OK
+```
+
+Example response:
+
+```json
+{
+  "groups": [
+    "liveness",
+    "readiness"
+  ],
+  "status": "UP"
+}
+```
+
+## WatchParty Resource
+
+### Fields
+
+| Field             | Type               | Description                            |
+| ----------------- | ------------------ | -------------------------------------- |
+| `id`              | UUID string        | Server-generated resource identifier   |
+| `title`           | string             | Watch party title                      |
+| `description`     | string or `null`   | Optional watch party description       |
+| `scheduledAt`     | ISO-8601 timestamp | Scheduled date and time                |
+| `genre`           | string             | Free-text genre                        |
+| `maxParticipants` | number             | Maximum number of participants         |
+| `status`          | string             | Current watch party status             |
+| `createdAt`       | ISO-8601 timestamp | Server-generated creation timestamp    |
+| `updatedAt`       | ISO-8601 timestamp | Server-generated last update timestamp |
+
+Supported status values:
+
+```text
+PLANNED
+LIVE
+FINISHED
+CANCELLED
+```
+
+## WatchParty Endpoints
+
+| Method   | Endpoint                  | Description                |
+| -------- | ------------------------- | -------------------------- |
+| `POST`   | `/api/watch-parties`      | Create a watch party       |
+| `GET`    | `/api/watch-parties`      | List watch parties         |
+| `GET`    | `/api/watch-parties/{id}` | Get one watch party        |
+| `PUT`    | `/api/watch-parties/{id}` | Fully update a watch party |
+| `DELETE` | `/api/watch-parties/{id}` | Delete a watch party       |
+
+## Create Watch Party
+
+```http
+POST /api/watch-parties
+```
 
 Creates a watch party with status `PLANNED`.
+
+The request body does not accept `id`, `status`, `createdAt` or `updatedAt`.
 
 Request body:
 
@@ -26,9 +108,13 @@ Request body:
 
 Successful response:
 
-`201 Created`
+```http
+201 Created
+```
 
 The response includes a `Location` header pointing to the created resource.
+
+Example response:
 
 ```json
 {
@@ -44,15 +130,23 @@ The response includes a `Location` header pointing to the created resource.
 }
 ```
 
-### List Watch Parties
+## List Watch Parties
 
-`GET /api/watch-parties`
+```http
+GET /api/watch-parties
+```
 
-Returns all watch parties. Pagination, sorting and filtering are not implemented yet.
+Returns all watch parties.
+
+Pagination, sorting and filtering are not implemented in the current baseline.
 
 Successful response:
 
-`200 OK`
+```http
+200 OK
+```
+
+Example response:
 
 ```json
 [
@@ -70,15 +164,21 @@ Successful response:
 ]
 ```
 
-### Get Watch Party
+## Get Watch Party
 
-`GET /api/watch-parties/{id}`
+```http
+GET /api/watch-parties/{id}
+```
 
 Returns one watch party by UUID.
 
 Successful response:
 
-`200 OK`
+```http
+200 OK
+```
+
+Example response:
 
 ```json
 {
@@ -94,13 +194,21 @@ Successful response:
 }
 ```
 
-If the watch party does not exist, the API returns `404 Not Found` with a ProblemDetail-style response.
+If the watch party does not exist, the API returns:
 
-### Update Watch Party
+```http
+404 Not Found
+```
 
-`PUT /api/watch-parties/{id}`
+## Update Watch Party
 
-Fully updates the mutable fields of an existing watch party by UUID. The resource id comes from the path. The request body does not accept `id`, `createdAt` or `updatedAt`.
+```http
+PUT /api/watch-parties/{id}
+```
+
+Fully updates the mutable fields of an existing watch party by UUID.
+
+The resource id comes from the path. The request body does not accept `id`, `createdAt` or `updatedAt`.
 
 Request body:
 
@@ -117,7 +225,11 @@ Request body:
 
 Successful response:
 
-`200 OK`
+```http
+200 OK
+```
+
+Example response:
 
 ```json
 {
@@ -133,38 +245,60 @@ Successful response:
 }
 ```
 
-If the request body fails validation, contains invalid JSON or contains an invalid enum value, the API returns `400 Bad Request` with a ProblemDetail-style response.
+If the watch party does not exist, the API returns:
 
-If the watch party does not exist, the API returns `404 Not Found` with a ProblemDetail-style response.
+```http
+404 Not Found
+```
 
-### Delete Watch Party
+If the request body fails validation, contains malformed JSON or contains an invalid enum value, the API returns:
 
-`DELETE /api/watch-parties/{id}`
+```http
+400 Bad Request
+```
+
+## Delete Watch Party
+
+```http
+DELETE /api/watch-parties/{id}
+```
 
 Hard deletes one watch party by UUID.
 
 Successful response:
 
-`204 No Content`
+```http
+204 No Content
+```
 
 The response body is empty.
 
-If the watch party does not exist, the API returns `404 Not Found` with a ProblemDetail-style response.
+If the watch party does not exist, the API returns:
 
-## Validation
+```http
+404 Not Found
+```
+
+## Validation Rules
 
 Create and full update requests are validated with these rules:
 
-- `title` is required and must be at most 120 characters.
-- `description` is optional and must be at most 1000 characters.
-- `scheduledAt` is required and must be in the present or future.
-- `genre` is required and must be at most 80 characters.
-- `maxParticipants` must be positive.
-- `status` is required for update requests.
+| Field             | Create       | Update   | Rule                                                 |
+| ----------------- | ------------ | -------- | ---------------------------------------------------- |
+| `title`           | Required     | Required | Must not be blank and must be at most 120 characters |
+| `description`     | Optional     | Optional | Must be at most 1000 characters when provided        |
+| `scheduledAt`     | Required     | Required | Must be present or future                            |
+| `genre`           | Required     | Required | Must not be blank and must be at most 80 characters  |
+| `maxParticipants` | Required     | Required | Must be positive                                     |
+| `status`          | Not accepted | Required | Must be one of the supported status values           |
 
-Validation failures return `400 Bad Request` with a ProblemDetail-style response and field error details.
+Validation failures return:
 
-Example:
+```http
+400 Bad Request
+```
+
+Validation error example:
 
 ```json
 {
@@ -181,8 +315,37 @@ Example:
 }
 ```
 
-## Planned Later
+## Error Responses
 
-Potential future endpoint:
+The API uses ProblemDetail-style error responses for validation errors, malformed request bodies, invalid enum values and missing resources.
 
-- `PATCH /api/watch-parties/{id}`
+Common error status codes:
+
+| Status            | Meaning                                                  |
+| ----------------- | -------------------------------------------------------- |
+| `400 Bad Request` | Validation failure, malformed JSON or invalid enum value |
+| `404 Not Found`   | Requested WatchParty resource does not exist             |
+
+ProblemDetail-style responses include standard fields such as:
+
+| Field    | Description                 |
+| -------- | --------------------------- |
+| `type`   | Problem type URI            |
+| `title`  | Short error summary         |
+| `status` | HTTP status code            |
+| `detail` | Human-readable error detail |
+
+Validation errors also include `fieldErrors`.
+
+## Out of Scope
+
+The following features are not implemented in the current baseline:
+
+* Authentication
+* Authorization
+* Pagination
+* Sorting
+* Filtering
+* Partial updates with `PATCH`
+* Machine-readable OpenAPI documentation
+* Deployment-specific API behavior

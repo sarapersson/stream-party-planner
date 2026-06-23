@@ -1,55 +1,33 @@
-# 🚧 StreamParty Planner
+# StreamParty Planner
 
-Planned full-stack web application for planning and managing stream watch parties.
+Full-stack application for planning and managing stream watch parties.
 
-This project is built step by step as part of a DevSecOps/full-stack course project, with focus on a clear layered Spring Boot architecture, automated testing, CI/CD practices and secure development workflows.
+The project is built as a DevSecOps-focused portfolio project with a Spring Boot backend, PostgreSQL persistence, a React frontend, automated API verification, end-to-end tests and protected CI workflows.
 
-## Current status
+## Status
 
-The repository currently contains:
+StreamParty Planner currently includes:
 
-- Initial repository baseline
-- Spring Boot backend skeleton
-- Backend health check through Spring Boot Actuator
-- Backend CI for Spring Boot backend tests
-- PostgreSQL local development setup with Docker Compose
-- Spring Data JPA foundation and Testcontainers-backed backend context tests
-- Flyway foundation for database schema migrations
-- WatchParty persistence domain model and initial database migration
-- WatchParty REST API baseline for CRUD use cases
-- Postman/Newman API verification locally and in CI
-- React 19, TypeScript and Vite frontend with WatchParty read, create, update and delete flows
+* WatchParty CRUD API
+* React frontend for listing, creating, updating and deleting watch parties
+* PostgreSQL local development setup with Docker Compose
+* Flyway-managed database migrations
+* Backend tests with Testcontainers
+* Postman/Newman API verification
+* Playwright end-to-end tests
+* GitHub Actions CI for backend, API, frontend and E2E checks
 
-The next phases will add additional automated tests, security scanning and further product capabilities.
+Authentication, deployment and automated security scanning are intentionally not part of the current baseline.
 
 ## Tech stack
 
-Current backend setup:
-
-- Java 25 LTS
-- Spring Boot 4.1.0
-- Maven Wrapper
-- Spring Web MVC
-- Spring Boot Actuator
-- Spring Validation
-- Spring Data JPA
-- Flyway
-- PostgreSQL 18.x
-- Docker Compose for local PostgreSQL
-- Testcontainers for backend integration testing
-- GitHub Actions backend CI and Newman API tests CI
-
-Current frontend setup:
-
-- Node.js 24 LTS
-- npm
-- React 19
-- TypeScript
-- Vite
-
-Planned project stack:
-
-- Playwright
+| Area     | Stack                                              |
+| -------- | -------------------------------------------------- |
+| Backend  | Java 25 LTS, Spring Boot 4.1.0, Maven              |
+| Database | PostgreSQL 18, Flyway, Docker Compose              |
+| Frontend | Node.js 24 LTS, React 19, TypeScript, Vite         |
+| Testing  | JUnit, Testcontainers, Postman, Newman, Playwright |
+| CI       | GitHub Actions                                     |
 
 ## Project structure
 
@@ -60,94 +38,35 @@ stream-party-planner/
 ├── frontend/
 ├── postman/
 ├── scripts/
-├── .github/
-│   └── workflows/
-├── .editorconfig
-├── .gitignore
-├── .gitmessage
-├── .java-version
-├── .nvmrc
+├── .github/workflows/
 ├── .env.example
 ├── docker-compose.yml
 ├── LICENSE
 └── README.md
 ```
 
-## Backend
+## Run locally
 
-The backend is located in `backend/`.
+Prerequisites:
 
-### Run tests
+* Java 25
+* Node.js 24
+* Docker
 
-```bash
-cd backend
-./mvnw test
-```
-
-Backend tests use Testcontainers with PostgreSQL, so Docker must be running.
-
-### Database migrations
-
-Database schema migrations are managed with Flyway.
-
-Hibernate schema generation remains disabled with `spring.jpa.hibernate.ddl-auto: none`.
-
-Schema migration scripts live under `backend/src/main/resources/db/migration`.
-
-The current schema includes the `watch_parties` table used by the backend WatchParty persistence model.
-
-### Local configuration
-
-`.env.example` is a committed local development template.
-
-Copy it to `.env` for local use. The `.env` file is ignored by Git and should stay local to each developer machine.
-
-The example values are local development values, not real secrets.
-
-Docker Compose is started with `--env-file .env` so the selected local configuration is explicit.
-
-`scripts/dev-backend.sh` loads the repository-root `.env` before starting Spring Boot with the `dev` profile.
-
-The backend dev profile does not silently fall back to database credentials. Missing local configuration fails during startup instead of using example values.
-
-If PostgreSQL credentials are changed after the Docker volume has already been initialized, reset the local volume:
-
-```bash
-docker compose down -v
-docker compose --env-file .env up -d
-```
-
-### Start the backend
+From the repository root, create the local environment file and start PostgreSQL:
 
 ```bash
 cp .env.example .env
 docker compose --env-file .env up -d
+```
+
+Start the backend:
+
+```bash
 ./scripts/dev-backend.sh
 ```
 
-The backend starts on:
-
-```text
-http://localhost:8080
-```
-
-### WatchParty CRUD API baseline
-
-The backend currently implements these WatchParty endpoints:
-
-- `POST /api/watch-parties`
-- `GET /api/watch-parties`
-- `GET /api/watch-parties/{id}`
-- `PUT /api/watch-parties/{id}`
-- `DELETE /api/watch-parties/{id}`
-
-The API contract is documented in `docs/API_CONTRACT.md`.
-
-External API verification with Postman/Newman is documented in `postman/README.md`.
-
-### Health check
-
-When the backend is running:
+Verify the backend health endpoint:
 
 ```bash
 curl http://localhost:8080/actuator/health
@@ -159,70 +78,105 @@ Expected response:
 {"groups":["liveness","readiness"],"status":"UP"}
 ```
 
-## Frontend
-
-The frontend is located in `frontend/`.
-
-Use Node.js 24 LTS. The repository root `.nvmrc` is set to `24`.
-
-Install dependencies and build the frontend locally:
+In a second terminal, install frontend dependencies and start the Vite development server:
 
 ```bash
 cd frontend
 npm install
-npm run build
+npm run dev
 ```
 
-Start the local Vite development server:
+Open the Vite development server URL shown in the terminal, normally:
 
-```bash
-cd frontend
-npm run dev
+```text
+http://localhost:5173
 ```
 
 During local development, Vite proxies `/api` requests to the backend at `http://localhost:8080`.
 
-The frontend displays existing WatchParty data from the backend API and supports creating, updating and deleting WatchParty records.
+## API
+
+The backend exposes the following WatchParty endpoints:
+
+| Method   | Endpoint                  | Description                |
+| -------- | ------------------------- | -------------------------- |
+| `POST`   | `/api/watch-parties`      | Create a watch party       |
+| `GET`    | `/api/watch-parties`      | List watch parties         |
+| `GET`    | `/api/watch-parties/{id}` | Get one watch party        |
+| `PUT`    | `/api/watch-parties/{id}` | Fully update a watch party |
+| `DELETE` | `/api/watch-parties/{id}` | Delete a watch party       |
+
+The full API contract is documented in [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md).
+
+## Verification
+
+Run backend tests:
+
+```bash
+cd backend
+./mvnw --batch-mode --no-transfer-progress test
+```
+
+Run local Newman API verification:
+
+```bash
+npx --yes newman@6.2.2 run postman/StreamPartyPlanner.postman_collection.json \
+  -e postman/local.postman_environment.json
+```
+
+Run frontend build and lint checks:
+
+```bash
+cd frontend
+npm ci
+npm run build
+npm run lint
+```
+
+Run local Playwright E2E tests:
+
+```bash
+cd frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+Local Playwright tests require PostgreSQL and the backend to be running.
 
 ## Continuous integration
 
-Backend tests and API verification are configured with GitHub Actions.
+The protected `main` branch requires these GitHub Actions checks before merge:
 
-The backend CI workflow runs Spring Boot backend tests on:
+| Workflow          | Required check            |
+| ----------------- | ------------------------- |
+| Backend CI        | `Backend tests`           |
+| API CI            | `Newman API tests`        |
+| Frontend CI       | `Frontend build and lint` |
+| Playwright E2E CI | `Playwright E2E tests`    |
 
-- Pushes to `main`
-- Selected development branch pushes
-- Pull requests targeting `main`
-- Manual workflow dispatch
+These checks run on pull requests targeting `main` and on updates to `main`, helping keep the protected branch stable.
 
-The Newman API tests workflow runs the Postman collection on:
-
-- Pushes to `main`
-- Pull requests targeting `main`
-- Manual workflow dispatch
+The current CI setup verifies build and test quality. It does not deploy the application and does not include automated security scanning yet.
 
 ## Development workflow
 
-Development is done through feature branches and pull requests.
-
-The `main` branch should stay stable.
+Development is done through focused branches and pull requests.
 
 Recommended flow:
 
-1. Create a feature branch.
-2. Open a pull request.
-3. Wait for CI to pass.
-4. Squash and merge into `main`.
-5. Delete the remote feature branch.
-6. Pull latest `main` locally.
-7. Delete the local feature branch.
+1. Create a branch from an up-to-date `main`.
+2. Make one focused change.
+3. Run relevant local verification.
+4. Open a pull request.
+5. Wait for required CI checks.
+6. Squash and merge after review.
 
 ## Security notes
 
-- Do not commit real secrets or personal credentials.
-- Do not commit `.env` files.
-- Use `.env.example` only for safe local development template values.
-- Keep sensitive configuration out of tracked repository files.
+* Real secrets must not be committed.
+* `.env` is local-only and ignored by Git.
+* `.env.example` contains safe local development example values.
+* Authentication, authorization, deployment and automated security scanning are planned separately after the current baseline is confirmed.
 
 ## License
 
