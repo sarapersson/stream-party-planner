@@ -50,11 +50,58 @@
   margin-top: 0;
 }
 
-.status-card ul {
-  margin: 1rem 0 0;
-  padding-left: 1.25rem;
+.state-message {
+  margin-top: 1rem;
 }
 
-.status-card li + li {
+.state-message--error {
+  color: var(--error);
+}
+
+.watch-party-list {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.watch-party-card {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.watch-party-card__header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.watch-party-card h3 {
+  color: var(--text-strong);
+  font-size: 1.1rem;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.status-badge {
+  background: rgb(37 99 235 / 0.1);
+  border-radius: 999px;
+  color: var(--text-strong);
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+}
+
+.watch-party-card__time {
+  color: var(--text-strong);
+  margin-top: 0.75rem;
+}
+
+.watch-party-card__description {
   margin-top: 0.75rem;
 }

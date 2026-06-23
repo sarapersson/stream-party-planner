@@ -2,6 +2,7 @@
   --accent: #2563eb;
   --background: #f8fafc;
   --border: #dbe4ef;
+  --error: #b91c1c;
   --shadow: 0 20px 45px rgb(15 23 42 / 0.08);
   --surface: #ffffff;
   --text: #475569;
@@ -26,6 +27,7 @@
     --accent: #93c5fd;
     --background: #0f172a;
     --border: #334155;
+    --error: #fca5a5;
     --shadow: 0 20px 45px rgb(0 0 0 / 0.24);
     --surface: #111827;
     --text: #cbd5e1;
