@@ -18,9 +18,9 @@ The repository currently contains:
 - WatchParty persistence domain model and initial database migration
 - WatchParty REST API baseline for CRUD use cases
 - Postman/Newman API verification locally and in CI
-- React 19, TypeScript and Vite frontend skeleton
+- React 19, TypeScript and Vite frontend with WatchParty read flow
 
-The next phases will add WatchParty frontend UI flows, additional automated tests, security scanning and further product capabilities.
+The next phases will add WatchParty create, update, and delete UI flows, additional automated tests, security scanning and further product capabilities.
 
 ## Tech stack
 
@@ -182,7 +182,7 @@ npm run dev
 
 During local development, Vite proxies `/api` requests to the backend at `http://localhost:8080`.
 
-The Phase 12 frontend is a minimal application shell. WatchParty read, create, update, and delete UI flows will be added in later phases.
+The frontend displays existing WatchParty data from the backend API. WatchParty create, update, and delete UI flows will be added in later phases.
 
 ## Continuous integration
 
