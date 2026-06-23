@@ -57,10 +57,22 @@
   margin-top: 0.5rem;
 }
 
-.create-form {
+.create-form,
+.edit-form {
   display: grid;
   gap: 1rem;
   margin-top: 1.25rem;
+}
+
+.edit-form {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.edit-form h4 {
+  color: var(--text-strong);
+  font-size: 1rem;
+  margin: 0;
 }
 
 .form-field {
@@ -74,7 +86,8 @@
 }
 
 .form-field input,
-.form-field textarea {
+.form-field textarea,
+.form-field select {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.65rem;
@@ -88,7 +101,9 @@
   resize: vertical;
 }
 
-.create-form button {
+.create-form button,
+.form-actions button,
+.watch-party-card__actions button {
   background: var(--accent);
   border: 0;
   border-radius: 999px;
@@ -100,9 +115,30 @@
   padding: 0.7rem 1.1rem;
 }
 
-.create-form button:disabled {
+.create-form button:disabled,
+.form-actions button:disabled,
+.watch-party-card__actions button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.form-actions,
+.watch-party-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-actions .secondary-button,
+.watch-party-card__actions .secondary-button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-strong);
+}
+
+.watch-party-card__actions .danger-button {
+  background: var(--danger);
+  color: var(--danger-text);
 }
 
 .state-message {
@@ -159,4 +195,32 @@
 
 .watch-party-card__description {
   margin-top: 0.75rem;
+}
+
+.watch-party-card__details {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  margin: 1rem 0 0;
+}
+
+.watch-party-card__details div {
+  background: rgb(37 99 235 / 0.06);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.watch-party-card__details dt {
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.watch-party-card__details dd {
+  color: var(--text-strong);
+  margin: 0.15rem 0 0;
+}
+
+.watch-party-card__actions {
+  margin-top: 1rem;
 }
