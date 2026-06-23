@@ -12,6 +12,14 @@ export type WatchParty = {
   updatedAt: string
 }
 
+export type CreateWatchPartyRequest = {
+  title: string
+  description?: string
+  scheduledAt: string
+  genre: string
+  maxParticipants: number
+}
+
 export async function listWatchParties(): Promise<WatchParty[]> {
   const response = await fetch('/api/watch-parties')
 
@@ -20,4 +28,22 @@ export async function listWatchParties(): Promise<WatchParty[]> {
   }
 
   return response.json() as Promise<WatchParty[]>
+}
+
+export async function createWatchParty(
+  request: CreateWatchPartyRequest,
+): Promise<WatchParty> {
+  const response = await fetch('/api/watch-parties', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to create watch party.')
+  }
+
+  return response.json() as Promise<WatchParty>
 }
