@@ -1,4 +1,4 @@
-name: Newman API tests
+name: API CI
 
 on:
   push:
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  newman:
+  api:
     name: Newman API tests
     runs-on: ubuntu-24.04
     timeout-minutes: 20

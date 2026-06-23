@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/**
   pull_request:
     branches:
       - main
@@ -18,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  backend:
     name: Backend tests
     runs-on: ubuntu-24.04
     timeout-minutes: 15
