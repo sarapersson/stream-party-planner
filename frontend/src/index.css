@@ -3,6 +3,8 @@
   --background: #f8fafc;
   --border: #dbe4ef;
   --button-text: #ffffff;
+  --danger: #dc2626;
+  --danger-text: #ffffff;
   --error: #b91c1c;
   --shadow: 0 20px 45px rgb(15 23 42 / 0.08);
   --surface: #ffffff;
@@ -29,6 +31,8 @@
     --background: #0f172a;
     --border: #334155;
     --button-text: #0f172a;
+    --danger: #fca5a5;
+    --danger-text: #0f172a;
     --error: #fca5a5;
     --shadow: 0 20px 45px rgb(0 0 0 / 0.24);
     --surface: #111827;
