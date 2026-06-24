@@ -2,7 +2,9 @@
 
 This document describes the current StreamParty Planner backend HTTP API.
 
-The API is consumed by the React frontend and by the Postman/Newman verification collection. It documents implemented behavior only.
+The API is consumed by the React frontend and by the Postman/Newman verification collection.
+
+This document describes implemented behavior only.
 
 ## Base URL
 
@@ -208,7 +210,9 @@ PUT /api/watch-parties/{id}
 
 Fully updates the mutable fields of an existing watch party by UUID.
 
-The resource id comes from the path. The request body does not accept `id`, `createdAt` or `updatedAt`.
+The resource id comes from the path.
+
+The request body does not accept `id`, `createdAt` or `updatedAt`.
 
 Request body:
 
@@ -336,6 +340,55 @@ ProblemDetail-style responses include standard fields such as:
 | `detail` | Human-readable error detail |
 
 Validation errors also include `fieldErrors`.
+
+## Example curl Commands
+
+Create a watch party:
+
+```bash
+curl -X POST http://localhost:8080/api/watch-parties \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Friday Movie Night",
+    "description": "A shared stream party for friends.",
+    "scheduledAt": "2030-07-01T19:30:00Z",
+    "genre": "Comedy",
+    "maxParticipants": 8
+  }'
+```
+
+List watch parties:
+
+```bash
+curl http://localhost:8080/api/watch-parties
+```
+
+Get one watch party:
+
+```bash
+curl http://localhost:8080/api/watch-parties/{id}
+```
+
+Update a watch party:
+
+```bash
+curl -X PUT http://localhost:8080/api/watch-parties/{id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Movie Night",
+    "description": "Updated description.",
+    "scheduledAt": "2030-07-02T19:30:00Z",
+    "genre": "Drama",
+    "maxParticipants": 10,
+    "status": "PLANNED"
+  }'
+```
+
+Delete a watch party:
+
+```bash
+curl -X DELETE http://localhost:8080/api/watch-parties/{id}
+```
 
 ## Out of Scope
 
