@@ -45,28 +45,69 @@ stream-party-planner/
 └── README.md
 ```
 
-## Run locally
+## Local setup
 
-Prerequisites:
+This section describes how to run the complete StreamParty Planner application locally with PostgreSQL, the Spring Boot backend and the React frontend.
+
+### Prerequisites
+
+Install these tools before starting:
 
 * Java 25
 * Node.js 24
 * Docker
+* Docker Compose
 
-From the repository root, create the local environment file and start PostgreSQL:
+The repository root `.nvmrc` is set to Node.js 24.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/sarapersson/stream-party-planner.git
+cd stream-party-planner
+```
+
+### 2. Create a local environment file
+
+Copy the example environment file:
 
 ```bash
 cp .env.example .env
+```
+
+The example values are intended for local development only.
+
+Do not commit real secrets or production credentials.
+
+### 3. Start PostgreSQL
+
+Start the local PostgreSQL database with Docker Compose:
+
+```bash
 docker compose --env-file .env up -d
 ```
 
-Start the backend:
+This starts PostgreSQL using the values from `.env`.
+
+### 4. Start the backend
+
+From the repository root, start the Spring Boot backend:
 
 ```bash
 ./scripts/dev-backend.sh
 ```
 
-Verify the backend health endpoint:
+The backend runs at:
+
+```text
+http://localhost:8080
+```
+
+Flyway migrations run automatically when the backend starts.
+
+### 5. Verify backend health
+
+In another terminal, verify that the backend is running:
 
 ```bash
 curl http://localhost:8080/actuator/health
@@ -78,7 +119,9 @@ Expected response:
 {"groups":["liveness","readiness"],"status":"UP"}
 ```
 
-In a second terminal, install frontend dependencies and start the Vite development server:
+### 6. Start the frontend
+
+Open a second terminal and run:
 
 ```bash
 cd frontend
@@ -92,7 +135,34 @@ Open the Vite development server URL shown in the terminal, normally:
 http://localhost:5173
 ```
 
-During local development, Vite proxies `/api` requests to the backend at `http://localhost:8080`.
+During local development, Vite proxies `/api` requests to the backend at:
+
+```text
+http://localhost:8080
+```
+
+### 7. Try the application
+
+With PostgreSQL, the backend and the frontend running, the UI can be used to:
+
+* List watch parties
+* Create watch parties
+* Edit watch parties
+* Delete watch parties after confirmation
+
+### 8. Stop local services
+
+Stop the PostgreSQL container when you are done:
+
+```bash
+docker compose --env-file .env down
+```
+
+To also remove the local database volume:
+
+```bash
+docker compose --env-file .env down -v
+```
 
 ## API
 
