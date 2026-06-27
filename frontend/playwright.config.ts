@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { defineConfig, devices } from '@playwright/test'
 
 const frontendBaseUrl = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5173'
@@ -24,9 +26,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1',
+    command: 'npm run build && npm run preview:e2e',
     url: frontendBaseUrl,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
     stdout: 'ignore',
     stderr: 'pipe',

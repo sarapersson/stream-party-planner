@@ -1,4 +1,12 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+/// <reference types="node" />
+
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type APIResponse,
+  type Page,
+} from '@playwright/test'
 
 type WatchParty = {
   id: string
@@ -20,8 +28,10 @@ type CreateWatchPartyRequest = {
   maxParticipants: number
 }
 
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://localhost:8080'
-const runPrefix = `E2E Playwright ${Date.now()}`
+const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:8080'
+const runPrefix = `E2E Playwright ${Date.now()} ${Math.random()
+  .toString(36)
+  .slice(2, 8)}`
 
 function uniqueTitle(flowName: string) {
   return `${runPrefix} ${flowName}`
@@ -54,6 +64,18 @@ function watchPartyCard(page: Page, title: string) {
   })
 }
 
+async function expectApiOk(response: APIResponse, action: string) {
+  if (response.ok()) {
+    return
+  }
+
+  const body = await response.text()
+
+  throw new Error(
+    `${action} failed with ${response.status()} ${response.statusText()}: ${body}`,
+  )
+}
+
 async function createWatchParty(
   request: APIRequestContext,
   overrides: Partial<CreateWatchPartyRequest> = {},
@@ -70,7 +92,7 @@ async function createWatchParty(
     },
   })
 
-  expect(response.ok()).toBeTruthy()
+  await expectApiOk(response, 'Create watch party')
 
   return (await response.json()) as WatchParty
 }
@@ -88,7 +110,13 @@ async function cleanupWatchParties(request: APIRequestContext) {
   )
 
   for (const watchParty of testWatchParties) {
-    await request.delete(`${apiBaseUrl}/api/watch-parties/${watchParty.id}`)
+    const deleteResponse = await request.delete(
+      `${apiBaseUrl}/api/watch-parties/${watchParty.id}`,
+    )
+
+    if (!deleteResponse.ok() && deleteResponse.status() !== 404) {
+      await expectApiOk(deleteResponse, `Clean up watch party ${watchParty.id}`)
+    }
   }
 }
 
@@ -258,4 +286,3 @@ test('keeps a watch party when delete confirmation is dismissed', async ({
     page.getByRole('heading', { name: title, exact: true }),
   ).toBeVisible()
 })
-
