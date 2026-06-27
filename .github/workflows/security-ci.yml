@@ -14,6 +14,12 @@ on:
 permissions:
   contents: read
 
+env:
+  JAVA_VERSION: "25"
+  NODE_VERSION: "24"
+  DEPENDENCY_CHECK_VERSION: "12.2.2"
+  DEPENDENCY_CHECK_FAIL_CVSS: "7"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -38,7 +44,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -46,7 +52,18 @@ jobs:
         run: npm ci
 
       - name: Run frontend dependency audit
-        run: npm audit --audit-level=high
+        run: |
+          set -o pipefail
+          npm audit --audit-level=high | tee npm-audit-report.txt
+
+      - name: Upload frontend dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: frontend-npm-audit-report
+          path: frontend/npm-audit-report.txt
+          if-no-files-found: ignore
+          retention-days: 7
 
   backend-security:
     name: Backend dependency audit
@@ -68,7 +85,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "25"
+          java-version: ${{ env.JAVA_VERSION }}
           cache: maven
           cache-dependency-path: backend/pom.xml
 
@@ -97,9 +114,10 @@ jobs:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           ./mvnw --batch-mode --no-transfer-progress \
-            org.owasp:dependency-check-maven:12.2.2:check \
+            org.owasp:dependency-check-maven:${DEPENDENCY_CHECK_VERSION}:check \
             -DskipTests \
-            -DfailBuildOnCVSS=7 \
+            -DfailBuildOnCVSS="${DEPENDENCY_CHECK_FAIL_CVSS}" \
+            -Dformat=HTML \
             -DnvdApiKey="${NVD_API_KEY}" \
             -DnvdApiDelay=3500 \
             -DdataDirectory="${HOME}/.dependency-check"

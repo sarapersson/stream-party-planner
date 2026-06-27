@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  JAVA_VERSION: "25"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -37,9 +40,18 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "25"
+          java-version: ${{ env.JAVA_VERSION }}
           cache: maven
           cache-dependency-path: backend/pom.xml
 
       - name: Run backend tests
         run: ./mvnw --batch-mode --no-transfer-progress test
+
+      - name: Upload backend test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
