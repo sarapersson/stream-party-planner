@@ -1,0 +1,114 @@
+name: Security CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-security:
+    name: Frontend dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend dependency audit
+        run: npm audit --audit-level=high
+
+  backend-security:
+    name: Backend dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Set OWASP Dependency-Check cache key
+        run: echo "DEPENDENCY_CHECK_CACHE_WEEK=$(date -u +'%G-W%V')" >> "$GITHUB_ENV"
+
+      - name: Restore OWASP Dependency-Check data cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.dependency-check
+          key: dependency-check-data-${{ runner.os }}-${{ env.DEPENDENCY_CHECK_CACHE_WEEK }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            dependency-check-data-${{ runner.os }}-
+
+      - name: Verify NVD API key is configured
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [[ -z "${NVD_API_KEY}" ]]; then
+            echo "NVD_API_KEY secret is required for OWASP Dependency-Check."
+            exit 1
+          fi
+
+      - name: Run backend dependency audit
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress \
+            org.owasp:dependency-check-maven:12.2.2:check \
+            -DskipTests \
+            -DfailBuildOnCVSS=7 \
+            -DnvdApiKey="${NVD_API_KEY}" \
+            -DnvdApiDelay=3500 \
+            -DdataDirectory="${HOME}/.dependency-check"
+
+      - name: Upload backend dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-dependency-check-report
+          path: backend/target/dependency-check-report.html
+          if-no-files-found: ignore
+          retention-days: 7
