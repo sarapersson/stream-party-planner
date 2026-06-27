@@ -12,7 +12,13 @@ export default defineConfig({
   },
   fullyParallel: false,
   workers: 1,
-  reporter: 'list',
+  reporter: process.env.CI
+    ? [
+        ['list'],
+        ['html', { outputFolder: 'playwright-report', open: 'never' }],
+        ['junit', { outputFile: 'playwright-results.xml' }],
+      ]
+    : 'list',
   use: {
     baseURL: frontendBaseUrl,
     trace: 'retain-on-failure',
