@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext } from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 
 type WatchParty = {
   id: string
@@ -31,6 +31,7 @@ function futureIsoTimestamp(daysFromNow: number) {
   const date = new Date()
   date.setDate(date.getDate() + daysFromNow)
   date.setHours(19, 30, 0, 0)
+
   return date.toISOString()
 }
 
@@ -42,6 +43,15 @@ function futureDatetimeLocalValue(daysFromNow: number) {
   const timezoneOffsetMs = date.getTimezoneOffset() * 60_000
 
   return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16)
+}
+
+function watchPartyCard(page: Page, title: string) {
+  return page.getByRole('listitem').filter({
+    has: page.getByRole('heading', {
+      name: title,
+      exact: true,
+    }),
+  })
 }
 
 async function createWatchParty(
@@ -88,6 +98,7 @@ test.afterEach(async ({ request }) => {
 
 test('displays watch parties from the API', async ({ page, request }) => {
   const title = uniqueTitle('display')
+
   await createWatchParty(request, { title })
 
   await page.goto('/')
@@ -95,7 +106,9 @@ test('displays watch parties from the API', async ({ page, request }) => {
   await expect(
     page.getByRole('heading', { name: 'StreamParty Planner' }),
   ).toBeVisible()
-  await expect(page.getByRole('heading', { name: title })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
 })
 
 test('creates a watch party through the UI', async ({ page }) => {
@@ -115,18 +128,19 @@ test('creates a watch party through the UI', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Create watch party' }).click()
 
-  await expect(page.getByRole('heading', { name: title })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
 })
 
 test('deletes a watch party through the UI', async ({ page, request }) => {
   const title = uniqueTitle('delete')
+
   await createWatchParty(request, { title })
 
   await page.goto('/')
 
-  const card = page.locator('article').filter({
-    has: page.getByRole('heading', { name: title }),
-  })
+  const card = watchPartyCard(page, title)
 
   await expect(card).toBeVisible()
 
@@ -137,5 +151,111 @@ test('deletes a watch party through the UI', async ({ page, request }) => {
 
   await card.getByRole('button', { name: 'Delete' }).click()
 
-  await expect(page.getByRole('heading', { name: title })).toHaveCount(0)
+  await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toHaveCount(0)
 })
+
+test('updates a watch party through the UI', async ({ page, request }) => {
+  const initialTitle = uniqueTitle('before edit')
+  const updatedTitle = uniqueTitle('after edit')
+  const updatedDescription = 'Updated through the Playwright E2E update flow.'
+
+  await createWatchParty(request, {
+    title: initialTitle,
+    genre: 'Drama',
+    maxParticipants: 8,
+  })
+
+  await page.goto('/')
+
+  const initialCard = watchPartyCard(page, initialTitle)
+
+  await expect(initialCard).toBeVisible()
+
+  await initialCard.getByRole('button', { name: 'Edit' }).click()
+
+  const editForm = initialCard.locator('form.edit-form')
+
+  await expect(editForm).toBeVisible()
+
+  await editForm.getByLabel('Title').fill(updatedTitle)
+  await editForm.getByLabel('Description').fill(updatedDescription)
+  await editForm
+    .getByLabel('Scheduled date and time')
+    .fill(futureDatetimeLocalValue(9))
+  await editForm.getByLabel('Genre').fill('Thriller')
+  await editForm.getByLabel('Maximum participants').fill('12')
+  await editForm.getByLabel('Status').selectOption('LIVE')
+
+  await editForm.getByRole('button', { name: 'Save changes' }).click()
+
+  const updatedCard = watchPartyCard(page, updatedTitle)
+
+  await expect(updatedCard).toBeVisible()
+  await expect(updatedCard.getByText(updatedDescription)).toBeVisible()
+  await expect(updatedCard.getByText('LIVE', { exact: true })).toBeVisible()
+  await expect(updatedCard.getByText('Thriller', { exact: true })).toBeVisible()
+  await expect(updatedCard.getByText('12', { exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: initialTitle, exact: true }),
+  ).toHaveCount(0)
+})
+
+test('cancels editing without saving changes', async ({ page, request }) => {
+  const initialTitle = uniqueTitle('cancel edit')
+  const unsavedTitle = uniqueTitle('unsaved edit')
+
+  await createWatchParty(request, { title: initialTitle })
+
+  await page.goto('/')
+
+  const card = watchPartyCard(page, initialTitle)
+
+  await expect(card).toBeVisible()
+
+  await card.getByRole('button', { name: 'Edit' }).click()
+
+  const editForm = card.locator('form.edit-form')
+
+  await expect(editForm).toBeVisible()
+
+  await editForm.getByLabel('Title').fill(unsavedTitle)
+  await editForm.getByLabel('Genre').fill('Unsaved genre')
+  await editForm.getByRole('button', { name: 'Cancel' }).click()
+
+  await expect(
+    page.getByRole('heading', { name: initialTitle, exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: unsavedTitle, exact: true }),
+  ).toHaveCount(0)
+  await expect(card.locator('form.edit-form')).toHaveCount(0)
+})
+
+test('keeps a watch party when delete confirmation is dismissed', async ({
+  page,
+  request,
+}) => {
+  const title = uniqueTitle('dismiss delete')
+
+  await createWatchParty(request, { title })
+
+  await page.goto('/')
+
+  const card = watchPartyCard(page, title)
+
+  await expect(card).toBeVisible()
+
+  page.once('dialog', async (dialog) => {
+    expect(dialog.message()).toContain(title)
+    await dialog.dismiss()
+  })
+
+  await card.getByRole('button', { name: 'Delete' }).click()
+
+  await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
+})
+
