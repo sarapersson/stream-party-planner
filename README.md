@@ -17,7 +17,7 @@ StreamParty Planner currently includes:
 * Playwright end-to-end tests
 * GitHub Actions CI for backend, API, frontend and E2E checks
 
-Authentication, deployment and automated security scanning are intentionally not part of the current baseline.
+Authentication and deployment are intentionally not part of the current baseline. Dependency security scanning is included in CI through npm audit for the frontend and OWASP Dependency-Check for the backend.
 
 ## Tech stack
 
@@ -226,7 +226,7 @@ The protected `main` branch requires these GitHub Actions checks before merge:
 
 These checks run on pull requests targeting `main` and on updates to `main`, helping keep the protected branch stable.
 
-The current CI setup verifies build and test quality. It does not deploy the application and does not include automated security scanning yet.
+The current CI setup verifies build, test quality and dependency security. It does not deploy the application.
 
 ## Development workflow
 
@@ -246,7 +246,7 @@ Recommended flow:
 * Real secrets must not be committed.
 * `.env` is local-only and ignored by Git.
 * `.env.example` contains safe local development example values.
-* Authentication, authorization, deployment and automated security scanning are planned separately after the current baseline is confirmed.
+* Authentication, authorization and deployment are planned separately after the current baseline is confirmed.
 
 ## License
 

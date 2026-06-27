@@ -1,0 +1,89 @@
+name: Security CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-security:
+    name: Frontend dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend dependency audit
+        run: npm audit --audit-level=high
+
+  backend-security:
+    name: Backend dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Run backend dependency audit
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress \
+            org.owasp:dependency-check-maven:12.2.2:check \
+            -DskipTests \
+            -DfailBuildOnCVSS=7 \
+            -DnvdApiDelay=8000
+
+      - name: Upload backend dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-dependency-check-report
+          path: backend/target/dependency-check-report.html
+          if-no-files-found: ignore
+          retention-days: 7
+          
