@@ -32,6 +32,15 @@ class ApiExceptionHandler {
 		return ResponseEntity.badRequest().body(problem);
 	}
 
+	@ExceptionHandler(IllegalArgumentException.class)
+	ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
+		ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+		problem.setTitle("Invalid request");
+		problem.setDetail(exception.getMessage());
+
+		return ResponseEntity.badRequest().body(problem);
+	}
+
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	ResponseEntity<ProblemDetail> handleUnreadableMessage(HttpMessageNotReadableException exception) {
 		ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);

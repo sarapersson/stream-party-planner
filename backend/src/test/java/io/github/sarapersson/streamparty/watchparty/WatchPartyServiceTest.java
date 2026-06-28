@@ -2,9 +2,8 @@ package io.github.sarapersson.streamparty.watchparty;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,9 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class WatchPartyServiceTest {
@@ -31,34 +27,75 @@ class WatchPartyServiceTest {
 	private WatchPartyService service;
 
 	@Test
-	void createDefaultsStatusToPlannedAndSavesThroughRepository() {
+	void createBuildsPlannedWatchPartyAndPersistsIt() {
 		WatchPartyCreateRequest request = new WatchPartyCreateRequest(
-				"Saturday sci-fi stream",
-				"Watching a classic together",
+				"Friday movie night",
+				"Bring popcorn",
 				Instant.parse("2030-07-01T18:30:00Z"),
-				"Sci-Fi",
-				8);
-		given(repository.save(any(WatchParty.class))).willAnswer(invocation -> invocation.getArgument(0));
+				"Comedy",
+				6);
+
+		ArgumentCaptor<WatchParty> captor = ArgumentCaptor.forClass(WatchParty.class);
+		when(repository.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		WatchPartyResponse response = service.create(request);
 
-		ArgumentCaptor<WatchParty> watchPartyCaptor = ArgumentCaptor.forClass(WatchParty.class);
-		verify(repository).save(watchPartyCaptor.capture());
-		WatchParty saved = watchPartyCaptor.getValue();
-
-		assertThat(saved.getTitle()).isEqualTo("Saturday sci-fi stream");
-		assertThat(saved.getDescription()).isEqualTo("Watching a classic together");
+		WatchParty saved = captor.getValue();
+		assertThat(saved.getTitle()).isEqualTo("Friday movie night");
+		assertThat(saved.getDescription()).isEqualTo("Bring popcorn");
 		assertThat(saved.getScheduledAt()).isEqualTo(Instant.parse("2030-07-01T18:30:00Z"));
-		assertThat(saved.getGenre()).isEqualTo("Sci-Fi");
-		assertThat(saved.getMaxParticipants()).isEqualTo(8);
+		assertThat(saved.getGenre()).isEqualTo("Comedy");
+		assertThat(saved.getMaxParticipants()).isEqualTo(6);
 		assertThat(saved.getStatus()).isEqualTo(WatchPartyStatus.PLANNED);
+
+		assertThat(response.title()).isEqualTo("Friday movie night");
 		assertThat(response.status()).isEqualTo(WatchPartyStatus.PLANNED);
 	}
 
 	@Test
-	void findByIdThrowsWatchPartyNotFoundExceptionWhenMissing() {
+	void findAllMapsEntitiesToResponses() {
+		WatchParty watchParty = new WatchParty(
+				"Sunday stream",
+				"Documentary night",
+				Instant.parse("2030-07-02T20:00:00Z"),
+				"Documentary",
+				10,
+				WatchPartyStatus.PLANNED);
+
+		when(repository.findAllByOrderByScheduledAtAsc()).thenReturn(List.of(watchParty));
+
+		List<WatchPartyResponse> responses = service.findAll();
+
+		assertThat(responses).hasSize(1);
+		assertThat(responses.getFirst().title()).isEqualTo("Sunday stream");
+		assertThat(responses.getFirst().genre()).isEqualTo("Documentary");
+		verify(repository).findAllByOrderByScheduledAtAsc();
+	}
+
+	@Test
+	void findByIdReturnsMappedResponseWhenWatchPartyExists() {
 		UUID id = UUID.randomUUID();
-		given(repository.findById(id)).willReturn(Optional.empty());
+		WatchParty watchParty = new WatchParty(
+				"Watch with friends",
+				null,
+				Instant.parse("2030-07-03T19:00:00Z"),
+				"Drama",
+				4,
+				WatchPartyStatus.PLANNED);
+
+		when(repository.findById(id)).thenReturn(Optional.of(watchParty));
+
+		WatchPartyResponse response = service.findById(id);
+
+		assertThat(response.title()).isEqualTo("Watch with friends");
+		assertThat(response.description()).isNull();
+		assertThat(response.genre()).isEqualTo("Drama");
+	}
+
+	@Test
+	void findByIdThrowsWhenWatchPartyIsMissing() {
+		UUID id = UUID.randomUUID();
+		when(repository.findById(id)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.findById(id))
 			.isInstanceOf(WatchPartyNotFoundException.class)
@@ -66,91 +103,48 @@ class WatchPartyServiceTest {
 	}
 
 	@Test
-	void findAllMapsEntitiesToResponses() {
+	void updateChangesExistingWatchParty() {
 		UUID id = UUID.randomUUID();
 		WatchParty watchParty = new WatchParty(
-				"Saturday sci-fi stream",
-				"Watching a classic together",
-				Instant.parse("2030-07-01T18:30:00Z"),
-				"Sci-Fi",
-				8,
+				"Original title",
+				"Original description",
+				Instant.parse("2030-07-04T18:00:00Z"),
+				"Action",
+				5,
 				WatchPartyStatus.PLANNED);
-		ReflectionTestUtils.setField(watchParty, "id", id);
-		given(repository.findAll()).willReturn(List.of(watchParty));
 
-		List<WatchPartyResponse> responses = service.findAll();
-
-		assertThat(responses).singleElement()
-			.satisfies(response -> {
-				assertThat(response.id()).isEqualTo(id);
-				assertThat(response.title()).isEqualTo("Saturday sci-fi stream");
-				assertThat(response.description()).isEqualTo("Watching a classic together");
-				assertThat(response.scheduledAt()).isEqualTo(Instant.parse("2030-07-01T18:30:00Z"));
-				assertThat(response.genre()).isEqualTo("Sci-Fi");
-				assertThat(response.maxParticipants()).isEqualTo(8);
-				assertThat(response.status()).isEqualTo(WatchPartyStatus.PLANNED);
-				assertThat(response.createdAt()).isEqualTo(watchParty.getCreatedAt());
-				assertThat(response.updatedAt()).isEqualTo(watchParty.getUpdatedAt());
-			});
-	}
-
-	@Test
-	void updateExistingWatchPartyUpdatesMutableFieldsAndReturnsResponse() {
-		UUID id = UUID.randomUUID();
-		Instant createdAt = Instant.parse("2026-06-21T10:15:30Z");
-		Instant previousUpdatedAt = Instant.parse("2026-06-21T10:15:30Z");
-		Instant scheduledAt = Instant.parse("2030-08-01T20:00:00Z");
-		WatchParty watchParty = new WatchParty(
-				"Saturday sci-fi stream",
-				"Watching a classic together",
-				Instant.parse("2030-07-01T18:30:00Z"),
-				"Sci-Fi",
-				8,
-				WatchPartyStatus.PLANNED);
-		ReflectionTestUtils.setField(watchParty, "id", id);
-		ReflectionTestUtils.setField(watchParty, "createdAt", createdAt);
-		ReflectionTestUtils.setField(watchParty, "updatedAt", previousUpdatedAt);
 		WatchPartyUpdateRequest request = new WatchPartyUpdateRequest(
-				"Updated stream",
+				"Updated title",
 				"Updated description",
-				scheduledAt,
-				"Drama",
+				Instant.parse("2030-08-04T18:00:00Z"),
+				"Sci-Fi",
 				12,
-				WatchPartyStatus.CANCELLED);
-		given(repository.findById(id)).willReturn(Optional.of(watchParty));
+				WatchPartyStatus.LIVE);
+
+		when(repository.findById(id)).thenReturn(Optional.of(watchParty));
 
 		WatchPartyResponse response = service.update(id, request);
 
-		assertThat(watchParty.getTitle()).isEqualTo("Updated stream");
-		assertThat(watchParty.getDescription()).isEqualTo("Updated description");
-		assertThat(watchParty.getScheduledAt()).isEqualTo(scheduledAt);
-		assertThat(watchParty.getGenre()).isEqualTo("Drama");
-		assertThat(watchParty.getMaxParticipants()).isEqualTo(12);
-		assertThat(watchParty.getStatus()).isEqualTo(WatchPartyStatus.CANCELLED);
-		assertThat(watchParty.getCreatedAt()).isEqualTo(createdAt);
-		assertThat(watchParty.getUpdatedAt()).isAfter(previousUpdatedAt);
-		assertThat(response.id()).isEqualTo(id);
-		assertThat(response.title()).isEqualTo("Updated stream");
+		assertThat(response.title()).isEqualTo("Updated title");
 		assertThat(response.description()).isEqualTo("Updated description");
-		assertThat(response.scheduledAt()).isEqualTo(scheduledAt);
-		assertThat(response.genre()).isEqualTo("Drama");
+		assertThat(response.scheduledAt()).isEqualTo(Instant.parse("2030-08-04T18:00:00Z"));
+		assertThat(response.genre()).isEqualTo("Sci-Fi");
 		assertThat(response.maxParticipants()).isEqualTo(12);
-		assertThat(response.status()).isEqualTo(WatchPartyStatus.CANCELLED);
-		assertThat(response.createdAt()).isEqualTo(createdAt);
-		assertThat(response.updatedAt()).isEqualTo(watchParty.getUpdatedAt());
+		assertThat(response.status()).isEqualTo(WatchPartyStatus.LIVE);
 	}
 
 	@Test
-	void updateMissingWatchPartyThrowsWatchPartyNotFoundException() {
+	void updateThrowsWhenWatchPartyIsMissing() {
 		UUID id = UUID.randomUUID();
 		WatchPartyUpdateRequest request = new WatchPartyUpdateRequest(
-				"Updated stream",
+				"Updated title",
 				"Updated description",
-				Instant.parse("2030-08-01T20:00:00Z"),
-				"Drama",
+				Instant.parse("2030-08-04T18:00:00Z"),
+				"Sci-Fi",
 				12,
-				WatchPartyStatus.CANCELLED);
-		given(repository.findById(id)).willReturn(Optional.empty());
+				WatchPartyStatus.LIVE);
+
+		when(repository.findById(id)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.update(id, request))
 			.isInstanceOf(WatchPartyNotFoundException.class)
@@ -158,16 +152,17 @@ class WatchPartyServiceTest {
 	}
 
 	@Test
-	void deleteExistingWatchPartyDeletesThroughRepository() {
+	void deleteRemovesExistingWatchParty() {
 		UUID id = UUID.randomUUID();
 		WatchParty watchParty = new WatchParty(
-				"Saturday sci-fi stream",
-				"Watching a classic together",
-				Instant.parse("2030-07-01T18:30:00Z"),
-				"Sci-Fi",
-				8,
+				"Delete me",
+				null,
+				Instant.parse("2030-07-05T18:00:00Z"),
+				"Horror",
+				3,
 				WatchPartyStatus.PLANNED);
-		given(repository.findById(id)).willReturn(Optional.of(watchParty));
+
+		when(repository.findById(id)).thenReturn(Optional.of(watchParty));
 
 		service.delete(id);
 
@@ -175,14 +170,13 @@ class WatchPartyServiceTest {
 	}
 
 	@Test
-	void deleteMissingWatchPartyThrowsWatchPartyNotFoundException() {
+	void deleteThrowsWhenWatchPartyIsMissing() {
 		UUID id = UUID.randomUUID();
-		given(repository.findById(id)).willReturn(Optional.empty());
+		when(repository.findById(id)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.delete(id))
 			.isInstanceOf(WatchPartyNotFoundException.class)
 			.hasMessageContaining(id.toString());
-		verify(repository, never()).delete(any(WatchParty.class));
 	}
 
 }

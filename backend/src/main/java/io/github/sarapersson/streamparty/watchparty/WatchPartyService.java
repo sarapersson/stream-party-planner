@@ -31,7 +31,7 @@ public class WatchPartyService {
 
 	@Transactional(readOnly = true)
 	public List<WatchPartyResponse> findAll() {
-		return repository.findAll()
+		return repository.findAllByOrderByScheduledAtAsc()
 			.stream()
 			.map(WatchPartyMapper::toResponse)
 			.toList();
