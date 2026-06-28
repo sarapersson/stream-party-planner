@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18
+    image: postgres:18.4
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required. Copy .env.example to .env.}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required. Copy .env.example to .env.}

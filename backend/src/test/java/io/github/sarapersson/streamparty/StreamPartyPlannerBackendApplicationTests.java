@@ -22,7 +22,7 @@ class StreamPartyPlannerBackendApplicationTests {
 		@Bean
 		@ServiceConnection
 		PostgreSQLContainer postgresContainer() {
-			return new PostgreSQLContainer("postgres:18");
+			return new PostgreSQLContainer("postgres:18.4");
 		}
 
 	}
