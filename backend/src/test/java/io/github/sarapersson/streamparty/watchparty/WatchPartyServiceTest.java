@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyCreateRequest;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyResponse;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyUpdateRequest;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

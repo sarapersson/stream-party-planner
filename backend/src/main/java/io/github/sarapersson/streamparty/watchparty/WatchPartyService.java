@@ -3,6 +3,11 @@ package io.github.sarapersson.streamparty.watchparty;
 import java.util.List;
 import java.util.UUID;
 
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyCreateRequest;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyMapper;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyResponse;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyUpdateRequest;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
