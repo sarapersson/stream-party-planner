@@ -46,6 +46,14 @@ function toDatetimeLocalInputValue(isoTimestamp: string) {
   return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16)
 }
 
+function sortWatchPartiesByScheduledAt(watchParties: WatchParty[]) {
+  return [...watchParties].sort(
+    (left, right) =>
+      new Date(left.scheduledAt).getTime() -
+      new Date(right.scheduledAt).getTime(),
+  )
+}
+
 function isWatchPartyStatus(value: string): value is WatchPartyStatus {
   return WATCH_PARTY_STATUSES.some((status) => status === value)
 }
@@ -207,10 +215,12 @@ function App() {
     try {
       const createdWatchParty = await createWatchParty(request)
 
-      setWatchParties((currentWatchParties) => [
-        createdWatchParty,
-        ...currentWatchParties,
-      ])
+      setWatchParties((currentWatchParties) =>
+        sortWatchPartiesByScheduledAt([
+          createdWatchParty,
+          ...currentWatchParties,
+        ]),
+      )
       setTitle('')
       setDescription('')
       setScheduledAt('')
@@ -290,8 +300,10 @@ function App() {
       const updatedWatchParty = await updateWatchParty(editForm.id, request)
 
       setWatchParties((currentWatchParties) =>
-        currentWatchParties.map((watchParty) =>
-          watchParty.id === updatedWatchParty.id ? updatedWatchParty : watchParty,
+        sortWatchPartiesByScheduledAt(
+          currentWatchParties.map((watchParty) =>
+            watchParty.id === updatedWatchParty.id ? updatedWatchParty : watchParty,
+          ),
         ),
       )
       setEditForm(null)
