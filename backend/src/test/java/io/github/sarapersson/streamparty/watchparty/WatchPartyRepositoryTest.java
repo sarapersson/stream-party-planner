@@ -107,9 +107,9 @@ class WatchPartyRepositoryTest {
 
 		List<WatchParty> watchParties = repository.findAllByOrderByScheduledAtAsc();
 
-		assertThat(watchParties)
-			.extracting(WatchParty::getTitle)
-			.containsExactly("Earlier stream", "Later stream");
+		assertThat(watchParties).hasSize(2);
+		assertThat(watchParties.get(0).getTitle()).isEqualTo("Earlier stream");
+		assertThat(watchParties.get(1).getTitle()).isEqualTo("Later stream");
 	}
 
 	@Test
