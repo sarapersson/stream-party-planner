@@ -47,7 +47,7 @@ stream-party-planner/
 
 ## Local setup
 
-This section describes how to run the complete StreamParty Planner application locally with PostgreSQL, the Spring Boot backend and the React frontend.
+This section describes the recommended manual local development setup: PostgreSQL runs in Docker Compose, while the Spring Boot backend and React frontend run on the host machine.
 
 ### Prerequisites
 
@@ -84,10 +84,10 @@ Do not commit real secrets or production credentials.
 Start the local PostgreSQL database with Docker Compose:
 
 ```bash
-docker compose --env-file .env up -d
+docker compose --env-file .env up -d postgres
 ```
 
-This starts PostgreSQL using the values from `.env`.
+This starts only PostgreSQL using the values from `.env`.
 
 ### 4. Start the backend
 
@@ -125,7 +125,7 @@ Open a second terminal and run:
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -194,6 +194,8 @@ npx --yes newman@6.2.2 run postman/StreamPartyPlanner.postman_collection.json \
   -e postman/local.postman_environment.json
 ```
 
+Local Newman verification requires PostgreSQL and the backend to be running.
+
 Run frontend build and lint checks:
 
 ```bash
@@ -211,7 +213,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Local Playwright tests require PostgreSQL and the backend to be running.
+Local Playwright tests require PostgreSQL, the backend and the frontend to be running.
 
 ## Continuous integration
 
