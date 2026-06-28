@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.EntityManager;
@@ -82,6 +83,33 @@ class WatchPartyRepositoryTest {
 
 		assertThat(found.getStatus()).isEqualTo(WatchPartyStatus.LIVE);
 		assertThat(storedStatus).isEqualTo("LIVE");
+	}
+
+	@Test
+	void findAllByOrderByScheduledAtAscReturnsWatchPartiesChronologically() {
+		WatchParty laterWatchParty = new WatchParty(
+				"Later stream",
+				"Scheduled later",
+				Instant.parse("2030-07-02T20:00:00Z"),
+				"Sci-Fi",
+				8,
+				WatchPartyStatus.PLANNED);
+		WatchParty earlierWatchParty = new WatchParty(
+				"Earlier stream",
+				"Scheduled earlier",
+				Instant.parse("2030-07-01T18:00:00Z"),
+				"Drama",
+				6,
+				WatchPartyStatus.PLANNED);
+
+		repository.saveAllAndFlush(List.of(laterWatchParty, earlierWatchParty));
+		entityManager.clear();
+
+		List<WatchParty> watchParties = repository.findAllByOrderByScheduledAtAsc();
+
+		assertThat(watchParties)
+			.extracting(WatchParty::getTitle)
+			.containsExactly("Earlier stream", "Later stream");
 	}
 
 	@Test
