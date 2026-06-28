@@ -18,7 +18,7 @@ The current frontend includes:
 * Creating new watch parties
 * Editing existing watch parties
 * Deleting watch parties after confirmation
-* Basic client-side validation before create and update requests
+* Basic client-side validation for create and update forms
 * User-facing error messages when loading, creating, updating or deleting fails
 * Responsive layout styling for desktop and smaller screens
 * Playwright end-to-end tests for core UI flows
@@ -31,7 +31,7 @@ Then start the frontend:
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -52,7 +52,7 @@ http://localhost:8080
 Install dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
 Start the development server:
@@ -91,18 +91,36 @@ Preview the production build locally:
 npm run preview
 ```
 
-## E2E test requirements
+## End-to-end tests
 
-The Playwright tests require:
+Playwright is used for browser-based end-to-end tests.
+
+The tests verify the main user-facing CRUD flows:
+
+* Listing watch parties from the API
+* Creating a watch party
+* Updating a watch party
+* Deleting a watch party after confirmation
+* Keeping a watch party when deletion is cancelled
+
+The tests require:
 
 * PostgreSQL running
 * The backend running at `http://localhost:8080`
-* The frontend available through the Playwright web server configuration
 
-By default, Playwright starts the Vite development server at:
+By default, Playwright builds the production frontend bundle and starts a local Vite preview server at:
 
 ```text
 http://127.0.0.1:5173
+```
+
+This means the E2E tests run against a production-like frontend build instead of the Vite development server.
+
+Run the tests with:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
 ```
 
 The frontend base URL can be overridden with:
@@ -123,4 +141,4 @@ The tests create test data through the API and clean up test-created watch parti
 
 This frontend does not implement authentication or authorization in the current baseline.
 
-The UI is intentionally focused on the WatchParty CRUD flow required for the course project.
+The UI is intentionally focused on the WatchParty CRUD flow.

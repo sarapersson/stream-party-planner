@@ -4,7 +4,7 @@ This document describes the current StreamParty Planner backend HTTP API.
 
 The API is consumed by the React frontend and by the Postman/Newman verification collection.
 
-This document describes implemented behavior only.
+This document describes the implemented baseline behavior and known API limitations.
 
 ## Base URL
 
@@ -287,14 +287,14 @@ If the watch party does not exist, the API returns:
 
 Create and full update requests are validated with these rules:
 
-| Field             | Create       | Update   | Rule                                                 |
-| ----------------- | ------------ | -------- | ---------------------------------------------------- |
-| `title`           | Required     | Required | Must not be blank and must be at most 120 characters |
-| `description`     | Optional     | Optional | Must be at most 1000 characters when provided        |
-| `scheduledAt`     | Required     | Required | Must be present or future                            |
-| `genre`           | Required     | Required | Must not be blank and must be at most 80 characters  |
-| `maxParticipants` | Required     | Required | Must be positive                                     |
-| `status`          | Not accepted | Required | Must be one of the supported status values           |
+| Field             | Create       | Update   | Rule                                                                                               |
+| ----------------- | ------------ | -------- | -------------------------------------------------------------------------------------------------- |
+| `title`           | Required     | Required | Must not be blank and must be at most 120 characters                                               |
+| `description`     | Optional     | Optional | Must be at most 1000 characters when provided                                                      |
+| `scheduledAt`     | Required     | Required | Create requests must use a present or future timestamp. Update requests require a valid timestamp. |
+| `genre`           | Required     | Required | Must not be blank and must be at most 80 characters                                                |
+| `maxParticipants` | Required     | Required | Must be positive                                                                                   |
+| `status`          | Not accepted | Required | Must be one of the supported status values                                                         |
 
 Validation failures return:
 
@@ -318,6 +318,12 @@ Validation error example:
   ]
 }
 ```
+
+## Known Validation Limitation
+
+Create requests validate that `scheduledAt` is present and uses a present or future timestamp.
+
+Update requests require `scheduledAt` to be present and formatted as a valid timestamp, but the current baseline does not enforce the same future-or-present validation on update.
 
 ## Error Responses
 

@@ -12,12 +12,14 @@ StreamParty Planner currently includes:
 * React frontend for listing, creating, updating and deleting watch parties
 * PostgreSQL local development setup with Docker Compose
 * Flyway-managed database migrations
-* Backend tests with Testcontainers
+* Backend tests with JUnit, Spring Boot and Testcontainers
 * Postman/Newman API verification
 * Playwright end-to-end tests
-* GitHub Actions CI for backend, API, frontend and E2E checks
+* Frontend build and lint verification
+* Dependency security scanning with npm audit and OWASP Dependency-Check
+* GitHub Actions CI for backend, API, frontend, E2E and security checks
 
-Authentication and deployment are intentionally not part of the current baseline. Dependency security scanning is included in CI through npm audit for the frontend and OWASP Dependency-Check for the backend.
+Authentication, authorization and deployment are intentionally not part of the current baseline. The project focuses on a testable full-stack CRUD application with automated CI verification, dependency security scanning and protected development workflows.
 
 ## Tech stack
 
@@ -178,6 +180,15 @@ The backend exposes the following WatchParty endpoints:
 
 The full API contract is documented in [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md).
 
+## Documentation
+
+Additional project documentation:
+
+* [API contract](docs/API_CONTRACT.md)
+* [BDD scenarios](docs/BDD_SCENARIOS.md)
+* [Branch protection](docs/BRANCH_PROTECTION.md)
+* [Security and DevSecOps](docs/SECURITY_AND_DEVSECOPS.md)
+
 ## Verification
 
 Run backend tests:
@@ -213,20 +224,26 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Local Playwright tests require PostgreSQL, the backend and the frontend to be running.
+Local Playwright tests require PostgreSQL and the backend to be running.
+
+The Playwright configuration builds the frontend production bundle and starts a local Vite preview server automatically before running the tests.
 
 ## Continuous integration
 
-The protected `main` branch requires these GitHub Actions checks before merge:
+The project uses separate GitHub Actions workflows for backend, API, frontend, E2E and security verification.
 
-| Workflow          | Required check            |
-| ----------------- | ------------------------- |
-| Backend CI        | `Backend tests`           |
-| API CI            | `Newman API tests`        |
-| Frontend CI       | `Frontend build and lint` |
-| Playwright E2E CI | `Playwright E2E tests`    |
+| Workflow          | Check name                  | Purpose                                      |
+| ----------------- | --------------------------- | -------------------------------------------- |
+| Backend CI        | `Backend tests`             | Runs the Spring Boot backend test suite      |
+| API CI            | `Newman API tests`          | Runs Postman/Newman API contract tests       |
+| Frontend CI       | `Frontend build and lint`   | Builds the frontend and runs ESLint          |
+| Playwright E2E CI | `Playwright E2E tests`      | Runs browser-based end-to-end tests          |
+| Security CI       | `Frontend dependency audit` | Runs npm audit for frontend dependencies     |
+| Security CI       | `Backend dependency audit`  | Runs OWASP Dependency-Check for backend code |
 
-These checks run on pull requests targeting `main` and on updates to `main`, helping keep the protected branch stable.
+The workflows run on pull requests targeting `main` and on updates to `main`. The Security CI workflow also runs on a weekly schedule and can be started manually.
+
+The intended protected `main` workflow requires relevant GitHub Actions checks to pass before merge. This acts as a quality gate and helps prevent broken, untested or vulnerable changes from being merged into the main branch.
 
 The current CI setup verifies build, test quality and dependency security. It does not deploy the application.
 
@@ -240,7 +257,7 @@ Recommended flow:
 2. Make one focused change.
 3. Run relevant local verification.
 4. Open a pull request.
-5. Wait for required CI checks.
+5. Wait for relevant CI checks.
 6. Squash and merge after review.
 
 ## Security notes
@@ -248,7 +265,27 @@ Recommended flow:
 * Real secrets must not be committed.
 * `.env` is local-only and ignored by Git.
 * `.env.example` contains safe local development example values.
-* Authentication, authorization and deployment are planned separately after the current baseline is confirmed.
+* GitHub Actions workflows use read-only repository permissions where possible.
+* Checkout steps use `persist-credentials: false`.
+* Frontend dependencies are checked with `npm audit`.
+* Backend dependencies are checked with OWASP Dependency-Check.
+* The backend dependency audit requires the repository secret `NVD_API_KEY`.
+* Authentication, authorization and deployment are outside the current baseline.
+
+If the `NVD_API_KEY` secret is missing, the `Backend dependency audit` job fails intentionally. The secret is used by OWASP Dependency-Check to query the NVD vulnerability database reliably.
+
+## Known limitations
+
+The current baseline intentionally does not include:
+
+* Authentication
+* Authorization
+* Deployment
+* Pagination, sorting or filtering
+* OpenAPI/Swagger documentation
+* SAST or DAST security scanning
+
+The project focuses on a testable full-stack CRUD application with automated CI verification and dependency security scanning.
 
 ## License
 
