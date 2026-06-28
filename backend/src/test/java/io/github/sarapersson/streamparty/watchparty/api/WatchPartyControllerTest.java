@@ -1,4 +1,4 @@
-package io.github.sarapersson.streamparty.watchparty;
+package io.github.sarapersson.streamparty.watchparty.api;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +20,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+
+import io.github.sarapersson.streamparty.watchparty.WatchPartyNotFoundException;
+import io.github.sarapersson.streamparty.watchparty.WatchPartyService;
+import io.github.sarapersson.streamparty.watchparty.WatchPartyStatus;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyCreateRequest;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyResponse;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyUpdateRequest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,9 +1,13 @@
-package io.github.sarapersson.streamparty.watchparty;
+package io.github.sarapersson.streamparty.watchparty.api;
 
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import io.github.sarapersson.streamparty.watchparty.WatchPartyService;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyCreateRequest;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyResponse;
+import io.github.sarapersson.streamparty.watchparty.dto.WatchPartyUpdateRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;

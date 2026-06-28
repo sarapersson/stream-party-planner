@@ -1,6 +1,8 @@
-package io.github.sarapersson.streamparty.watchparty;
+package io.github.sarapersson.streamparty.watchparty.api;
 
 import java.util.List;
+
+import io.github.sarapersson.streamparty.watchparty.WatchPartyNotFoundException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

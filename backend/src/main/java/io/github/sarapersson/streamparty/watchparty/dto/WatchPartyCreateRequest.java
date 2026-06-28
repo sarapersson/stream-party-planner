@@ -1,4 +1,4 @@
-package io.github.sarapersson.streamparty.watchparty;
+package io.github.sarapersson.streamparty.watchparty.dto;
 
 import java.time.Instant;
 
@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-public record WatchPartyUpdateRequest(
+public record WatchPartyCreateRequest(
 		@NotBlank
 		@Size(max = 120)
 		String title,
@@ -25,8 +25,5 @@ public record WatchPartyUpdateRequest(
 		String genre,
 
 		@Positive
-		int maxParticipants,
-
-		@NotNull
-		WatchPartyStatus status) {
+		int maxParticipants) {
 }

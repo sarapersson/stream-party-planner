@@ -1,11 +1,13 @@
-package io.github.sarapersson.streamparty.watchparty;
+package io.github.sarapersson.streamparty.watchparty.dto;
 
-final class WatchPartyMapper {
+import io.github.sarapersson.streamparty.watchparty.WatchParty;
+
+public final class WatchPartyMapper {
 
 	private WatchPartyMapper() {
 	}
 
-	static WatchPartyResponse toResponse(WatchParty watchParty) {
+	public static WatchPartyResponse toResponse(WatchParty watchParty) {
 		return new WatchPartyResponse(
 				watchParty.getId(),
 				watchParty.getTitle(),
