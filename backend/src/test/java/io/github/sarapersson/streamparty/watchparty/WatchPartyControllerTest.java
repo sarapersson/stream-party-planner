@@ -3,6 +3,8 @@ package io.github.sarapersson.streamparty.watchparty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -26,9 +28,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 
 @WebMvcTest(WatchPartyController.class)
 @Import(ApiExceptionHandler.class)
@@ -109,6 +108,32 @@ class WatchPartyControllerTest {
 			.andExpect(jsonPath("$.fieldErrors").isArray());
 
 		verifyNoInteractions(service);
+	}
+
+	@Test
+	void createWatchPartyWhenDomainValidationFailsReturnsProblemDetail() throws Exception {
+		Instant scheduledAt = Instant.now().plus(Duration.ofDays(1)).truncatedTo(ChronoUnit.SECONDS);
+		given(service.create(any(WatchPartyCreateRequest.class)))
+			.willThrow(new IllegalArgumentException("Watch party domain rule failed."));
+		String requestBody = """
+				{
+				  "title": "Saturday sci-fi stream",
+				  "description": "Watching a classic together",
+				  "scheduledAt": "%s",
+				  "genre": "Sci-Fi",
+				  "maxParticipants": 8
+				}
+				""".formatted(scheduledAt);
+
+		mockMvc.perform(post("/api/watch-parties")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.title").value("Invalid request"))
+			.andExpect(jsonPath("$.status").value(400))
+			.andExpect(jsonPath("$.detail").value("Watch party domain rule failed."));
+
+		verify(service).create(any(WatchPartyCreateRequest.class));
 	}
 
 	@Test
