@@ -23,6 +23,8 @@ The committed `.env.example` file contains safe example values only.
 
 Real secrets, production credentials and private environment-specific values must not be committed.
 
+GitHub secret scanning and push protection are enabled for the repository, blocking pushes that contain detected secrets.
+
 The `.env` file is ignored by Git and should be created locally from:
 
 ```bash
@@ -58,15 +60,16 @@ These controls help prevent broken, untested or vulnerable changes from being me
 
 ## Security Gates
 
-The intended security and quality gates are:
+The security and quality gates enforced by the `main` ruleset are:
 
-* Pull requests are used before integration into `main`
-* Relevant GitHub Actions checks must pass before merge
-* Code review should be required before merge
-* Dependency audit results are checked automatically
-* Failed verification blocks the normal merge flow
+* Pull requests are required before integration into `main`
+* All required GitHub Actions checks, including both dependency audits, must pass before merge
+* Review conversations must be resolved before merge
+* Failed verification blocks the merge
 
-The exact branch protection configuration is managed in GitHub repository settings and is documented separately in [`BRANCH_PROTECTION.md`](BRANCH_PROTECTION.md).
+Required approvals are set to zero because this is a single-developer project; in a team setting, approval from another person should also be required.
+
+The branch protection configuration is managed as a GitHub repository ruleset and is documented in [`BRANCH_PROTECTION.md`](BRANCH_PROTECTION.md).
 
 ## GitHub Actions Hardening
 
