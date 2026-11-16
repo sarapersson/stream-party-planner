@@ -2,7 +2,9 @@
 
 Full-stack application for planning and managing stream watch parties.
 
-The project is built as a DevSecOps-focused portfolio project with a Spring Boot backend, PostgreSQL persistence, a React frontend, automated API verification, end-to-end tests and protected CI workflows.
+Project for part 1 of the DevSecOps with Security Specialisation course (Swedish higher vocational education, YH) at NBI/Handelsakademin.
+
+It consists of a Spring Boot backend, PostgreSQL persistence and a React frontend, with a DevSecOps focus on automated API verification, end-to-end tests, dependency security scanning and protected CI workflows.
 
 ## Status
 
@@ -25,7 +27,7 @@ Authentication, authorization and deployment are intentionally not part of the c
 
 | Area     | Stack                                              |
 | -------- | -------------------------------------------------- |
-| Backend  | Java 25 LTS, Spring Boot 4.1.0, Maven              |
+| Backend  | Java 25 LTS, Spring Boot 4.1.2, Maven              |
 | Database | PostgreSQL 18, Flyway, Docker Compose              |
 | Frontend | Node.js 24 LTS, React 19, TypeScript, Vite         |
 | Testing  | JUnit, Testcontainers, Postman, Newman, Playwright |
@@ -243,7 +245,7 @@ The project uses separate GitHub Actions workflows for backend, API, frontend, E
 
 The workflows run on pull requests targeting `main` and on updates to `main`. The Security CI workflow also runs on a weekly schedule and can be started manually.
 
-The intended protected `main` workflow requires relevant GitHub Actions checks to pass before merge. This acts as a quality gate and helps prevent broken, untested or vulnerable changes from being merged into the main branch.
+`main` is protected by a GitHub ruleset: changes go through pull requests, all six CI checks must pass on a branch that is up to date with `main`, and force pushes and branch deletion are blocked. This acts as a quality gate and helps prevent broken, untested or vulnerable changes from being merged.
 
 The current CI setup verifies build, test quality and dependency security. It does not deploy the application.
 
@@ -265,12 +267,12 @@ Recommended flow:
 * Real secrets must not be committed.
 * `.env` is local-only and ignored by Git.
 * `.env.example` contains safe local development example values.
+* GitHub secret scanning and push protection are enabled, blocking pushes that contain detected secrets.
 * GitHub Actions workflows use read-only repository permissions where possible.
 * Checkout steps use `persist-credentials: false`.
 * Frontend dependencies are checked with `npm audit`.
 * Backend dependencies are checked with OWASP Dependency-Check.
 * The backend dependency audit requires the repository secret `NVD_API_KEY`.
-* Authentication, authorization and deployment are outside the current baseline.
 
 If the `NVD_API_KEY` secret is missing, the `Backend dependency audit` job fails intentionally. The secret is used by OWASP Dependency-Check to query the NVD vulnerability database reliably.
 
@@ -284,8 +286,6 @@ The current baseline intentionally does not include:
 * Pagination, sorting or filtering
 * OpenAPI/Swagger documentation
 * SAST or DAST security scanning
-
-The project focuses on a testable full-stack CRUD application with automated CI verification and dependency security scanning.
 
 ## License
 

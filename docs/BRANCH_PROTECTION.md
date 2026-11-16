@@ -1,34 +1,37 @@
 # Branch Protection
 
-This document describes the intended branch protection and pull request workflow for StreamParty Planner.
+This document describes the branch protection and pull request workflow for StreamParty Planner.
 
-Branch protection is configured in GitHub and is therefore not fully visible from the repository files alone. The purpose of this document is to describe the expected repository workflow and the quality gates used before changes are merged into `main`.
+Branch protection is configured in GitHub as a repository ruleset and is therefore not visible from the repository files alone. This document describes the configured rules and the quality gates used before changes are merged into `main`.
 
 ## Protected Branch
 
-The `main` branch is the protected integration branch.
+The `main` branch is the protected integration branch. It is protected by the active ruleset `Protect main`, which targets the default branch and has no bypass actors, so the rules also apply to the repository owner.
 
-Development work should be done on separate branches and merged into `main` through pull requests.
+The ruleset enforces:
 
-Direct pushes to `main` are not part of the normal development workflow.
+* Changes to `main` must go through a pull request.
+* All required status checks must pass before merge.
+* The pull request branch must be up to date with `main` before merge.
+* All review conversations must be resolved before merge.
+* Force pushes to `main` are blocked.
+* Deletion of `main` is blocked.
 
 ## Pull Request Workflow
 
-The intended workflow is:
+The workflow is:
 
 1. Create a branch from an up-to-date `main`.
 2. Make one focused change.
 3. Run relevant verification locally.
 4. Open a pull request targeting `main`.
-5. Wait for relevant GitHub Actions checks to complete.
-6. Request or receive code review.
-7. Merge only after the configured quality gates have passed.
+5. Wait for the required GitHub Actions checks to complete.
+6. Review the changes and resolve any review conversations.
+7. Squash and merge after the quality gates have passed.
 
 ## Quality Gates
 
-Branch protection is intended to use relevant CI checks as merge gates.
-
-The project includes these checks:
+The ruleset requires these checks to pass before merge:
 
 | Workflow          | Check name                  | Purpose                                 |
 | ----------------- | --------------------------- | --------------------------------------- |
@@ -41,9 +44,7 @@ The project includes these checks:
 
 ## Code Review
 
-For a review-based workflow, pull requests should require approval from another person before merge.
-
-This supports peer review and adds a manual quality gate in addition to automated checks.
+The number of required approvals is set to zero because this is a single-developer project. In a team setting, pull requests should require approval from at least one other person before merge, adding a manual quality gate in addition to the automated checks.
 
 ## Security-Related Checks
 
@@ -53,6 +54,4 @@ The backend dependency audit requires the repository secret `NVD_API_KEY`. If th
 
 ## Notes
 
-The exact GitHub branch protection configuration must be verified in the GitHub repository settings.
-
-This document describes the intended branch protection setup and should be kept in sync with the actual repository configuration.
+This document should be kept in sync with the ruleset configuration in the GitHub repository settings.
